@@ -8,14 +8,16 @@ use Yii;
  * This is the model class for table "documento".
  *
  * @property int $id_documento
- * @property string $nombre_documento
- * @property string|null $confirmado
- * @property string|null $hash
+ * @property string $nombre
+ * @property string $hash
+ * @property string|null $fecha_confirmacion
  * @property int $id_evento
- * @property int $id_tipo_documento
+ * @property int $id_plantilla
+ * @property int|null $nota_valoracion
+ * @property string|null $path
  *
  * @property Evento $evento
- * @property TipoDocumento $tipoDocumento
+ * @property Plantilla $plantilla
  */
 class Documento extends \yii\db\ActiveRecord
 {
@@ -33,13 +35,13 @@ class Documento extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['tipo_documento', 'id_evento', 'id_tipo_documento'], 'required'],
-            [['tipo_documento', 'hash'], 'string'],
-            [['confirmado'], 'safe'],
-            [['id_evento', 'id_tipo_documento'], 'default', 'value' => null],
-            [['id_evento', 'id_tipo_documento'], 'integer'],
-            [['id_evento'], 'exist', 'skipOnError' => true, 'targetClass' => Evento::class, 'targetAttribute' => ['id_evento' => 'id_evento']],
-            [['id_tipo_documento'], 'exist', 'skipOnError' => true, 'targetClass' => TipoDocumento::class, 'targetAttribute' => ['id_tipo_documento' => 'id_tipo_documento']],
+            [['nombre', 'hash', 'id_evento', 'id_plantilla'], 'required'],
+            [['nombre', 'hash', 'path'], 'string'],
+            [['fecha_confirmacion'], 'safe'],
+            [['id_evento', 'id_plantilla', 'nota_valoracion'], 'default', 'value' => null],
+            [['id_evento', 'id_plantilla', 'nota_valoracion'], 'integer'],
+            [['id_evento'], 'exist', 'skipOnError' => true, 'targetClass' => Evento::className(), 'targetAttribute' => ['id_evento' => 'id_evento']],
+            [['id_plantilla'], 'exist', 'skipOnError' => true, 'targetClass' => Plantilla::className(), 'targetAttribute' => ['id_plantilla' => 'id_plantilla']],
         ];
     }
 
@@ -50,11 +52,13 @@ class Documento extends \yii\db\ActiveRecord
     {
         return [
             'id_documento' => 'Id Documento',
-            'nombre_documento' => 'Nombre Documento',
-            'confirmado' => 'Confirmado',
+            'nombre' => 'Nombre',
             'hash' => 'Hash',
+            'fecha_confirmacion' => 'Fecha Confirmacion',
             'id_evento' => 'Id Evento',
-            'id_tipo_documento' => 'Id Tipo Documento',
+            'id_plantilla' => 'Id Plantilla',
+            'nota_valoracion' => 'Nota Valoracion',
+            'path' => 'Path',
         ];
     }
 
@@ -65,16 +69,16 @@ class Documento extends \yii\db\ActiveRecord
      */
     public function getEvento()
     {
-        return $this->hasOne(Evento::class, ['id_evento' => 'id_evento']);
+        return $this->hasOne(Evento::className(), ['id_evento' => 'id_evento']);
     }
 
     /**
-     * Gets query for [[TipoDocumento]].
+     * Gets query for [[Plantilla]].
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getTipoDocumento()
+    public function getPlantilla()
     {
-        return $this->hasOne(TipoDocumento::class, ['id_tipo_documento' => 'id_tipo_documento']);
+        return $this->hasOne(Plantilla::className(), ['id_plantilla' => 'id_plantilla']);
     }
 }

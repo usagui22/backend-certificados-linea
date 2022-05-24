@@ -7,6 +7,6 @@ use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 
-class UnidadController extends Controller{
+class AuthController extends Controller{
 
 }
