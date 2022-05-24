@@ -10,11 +10,9 @@ use Yii;
  * @property int $id_integrante
  * @property int $id_usuario
  * @property int $id_evento
- * @property int|null $id_tipo_valoracion
- * @property string|null $tipo_integrante
+ * @property string $tipo_integrante
  *
  * @property Evento $evento
- * @property TipoValoracion $tipoValoracion
  * @property Usuario $usuario
  */
 class Integrante extends \yii\db\ActiveRecord
@@ -33,13 +31,10 @@ class Integrante extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_usuario', 'id_evento'], 'required'],
-            [['id_usuario', 'id_evento', 'id_tipo_valoracion'], 'default', 'value' => null],
-            [['id_usuario', 'id_evento', 'id_tipo_valoracion'], 'integer'],
+            [['tipo_integrante'], 'required'],
             [['tipo_integrante'], 'string'],
             [['id_evento'], 'exist', 'skipOnError' => true, 'targetClass' => Evento::className(), 'targetAttribute' => ['id_evento' => 'id_evento']],
-            [['id_tipo_valoracion'], 'exist', 'skipOnError' => true, 'targetClass' => TipoValoracion::className(), 'targetAttribute' => ['id_tipo_valoracion' => 'id_tipo_valoracion']],
-            [['id_usuario'], 'exist', 'skipOnError' => true, 'targetClass' => Usuario::className(), 'targetAttribute' => ['id_usuario' => 'id_usuario']],
+            [['id_usuario'], 'exist', 'skipOnError' => true, 'targetClass' => Usuario::className(), 'targetAttribute' => ['id_usuario' => 'id']],
         ];
     }
 
@@ -52,7 +47,6 @@ class Integrante extends \yii\db\ActiveRecord
             'id_integrante' => 'Id Integrante',
             'id_usuario' => 'Id Usuario',
             'id_evento' => 'Id Evento',
-            'id_tipo_valoracion' => 'Id Tipo Valoracion',
             'tipo_integrante' => 'Tipo Integrante',
         ];
     }
@@ -68,22 +62,12 @@ class Integrante extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[TipoValoracion]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getTipoValoracion()
-    {
-        return $this->hasOne(TipoValoracion::className(), ['id_tipo_valoracion' => 'id_tipo_valoracion']);
-    }
-
-    /**
      * Gets query for [[Usuario]].
      *
      * @return \yii\db\ActiveQuery
      */
     public function getUsuario()
     {
-        return $this->hasOne(Usuario::className(), ['id_usuario' => 'id_usuario']);
+        return $this->hasOne(Usuario::className(), ['id' => 'id_usuario']);
     }
 }

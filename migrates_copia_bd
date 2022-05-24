@@ -1,0 +1,225 @@
+CREATE TABLE public.valor (
+	id_valor serial8 NOT NULL,
+	cod_hash varchar NOT NULL,
+	CONSTRAINT valor_pk PRIMARY KEY (id_valor)
+);
+
+//////////////////////////////////////////DOCUMENTO/////////////////
+CREATE TABLE public.documento (
+	id_documento serial8 NOT NULL,
+	tipo_documento varchar NOT NULL,
+	confirmado timestamp NULL,
+	hash varchar NULL
+);
+TER TABLE public.documento ADD id_evento serial8 NOT NULL;
+ALTER TABLE public.documento ADD CONSTRAINT documento_pk PRIMARY KEY (id_documento);
+ALTER TABLE public.documento ADD id_tipo_documento int8 NOT NULL;
+ALTER TABLE public.documento ADD CONSTRAINT documento_fk FOREIGN KEY (id_tipo_documento) REFERENCES public.tipo_documento(id_tipo_documento);
+ALTER TABLE public.documento RENAME CONSTRAINT documento_fk TO documento_evento;
+ALTER TABLE public.documento ADD CONSTRAINT documento_tipo_documento FOREIGN KEY (id_tipo_documento) REFERENCES public.tipo_documento(id_tipo_documento);
+ALTER TABLE public.documento RENAME COLUMN tipo_documento TO nombre_documento;
+ALTER TABLE public.documento ADD nota_valoracion int NULL;
+
+
+--------------------EVENTO----------------------------
+CREATE TABLE public.evento (
+	id_evento serial8 NOT NULL,
+	CONSTRAINT evento_pk PRIMARY KEY (id_evento)
+);
+ALTER TABLE public.documento DROP COLUMN id_evento;
+ALTER TABLE public.documento ADD id_evento int8 NOT NULL;
+ALTER TABLE public.documento ADD CONSTRAINT documento_fk FOREIGN KEY (id_evento) REFERENCES public.evento(id_evento);
+ALTER TABLE public.evento ADD nombre_evento varchar NOT NULL;
+ALTER TABLE public.evento ADD tipo_valoracion varchar NOT NULL;
+ALTER TABLE public.evento ADD url_validacion varchar NOT NULL;
+ALTER TABLE public.evento ADD id_unidad int8 NOT NULL;
+ALTER TABLE public.evento ADD CONSTRAINT evento_fk FOREIGN KEY (id_unidad) REFERENCES public.unidad(id_unidad);
+ALTER TABLE public.evento ADD fecha_inicio date NOT NULL;
+ALTER TABLE public.evento ADD fecha_fin date NOT NULL;
+ALTER TABLE public.evento DROP COLUMN tipo_valoracion;
+ALTER TABLE public.evento ADD id_participante int8 NOT NULL;
+ALTER TABLE public.evento ADD CONSTRAINT "evento-participante_fk" FOREIGN KEY (id_participante) REFERENCES public.participante(id_participante);
+ALTER TABLE public.evento RENAME CONSTRAINT evento_fk TO "evento-unidad_fk";
+ALTER TABLE public.evento ADD CONSTRAINT "evento-tipo_valoracion_fk" FOREIGN KEY (id_tipo_valoracion) REFERENCES public.tipo_valoracion(id_tipo_valoracion);
+ALTER TABLE public.evento ADD CONSTRAINT "evento-participante_fk" FOREIGN KEY (id_participante) REFERENCES public.participante(id_participante);
+ALTER TABLE public.evento DROP CONSTRAINT "evento-tipo_valoracion_fk";
+ALTER TABLE public.evento DROP CONSTRAINT "evento-participante_fk";
+ALTER TABLE public.evento DROP COLUMN id_tipo_valoracion;
+ALTER TABLE public.evento DROP COLUMN id_participante;
+
+
+--------------------------------PARTICIPANTE-------------------------
+CREATE TABLE public.participante (
+	id_participante serial8 NOT NULL,
+	nombre_participante varchar NOT NULL,
+	ocupacion_participante varchar NOT NULL,
+	correo_participante varchar NOT NULL,
+	contrasenna_participante varchar NOT NULL,
+	id_evento int8 NOT NULL,
+	CONSTRAINT participante_pk PRIMARY KEY (id_participante),
+	CONSTRAINT participante_fk FOREIGN KEY (id_evento) REFERENCES public.evento(id_evento)
+);
+ALTER TABLE public.participante ADD ci_participante varchar NOT NULL;
+ALTER TABLE public.participante ADD complemento_ci_participante varchar NOT NULL;
+ALTER TABLE public.participante DROP CONSTRAINT participante_fk;
+ALTER TABLE public.participante DROP COLUMN id_evento;
+ALTER TABLE public.participante ADD apellido_participante varchar NOT NULL;
+ALTER TABLE public.participante RENAME COLUMN apellido_participante TO apellido_paterno_participante;
+ALTER TABLE public.participante ADD apellido_materno_participante varchar NOT NULL;
+ALTER TABLE public.participante RENAME COLUMN correo_participante TO apellido_materno_participante;
+ALTER TABLE public.participante RENAME COLUMN contrasenna_participante TO ocupacion_participante;
+ALTER TABLE public.participante RENAME COLUMN ci_participante TO correo_participante;
+ALTER TABLE public.participante RENAME COLUMN complemento_ci_participante TO contrasenna_participante;
+ALTER TABLE public.participante RENAME COLUMN apellido_paterno_participante TO ci_participante;
+ALTER TABLE public.participante RENAME COLUMN apellido_materno_participante TO complemento_ci_participante;
+ALTER TABLE public.participante RENAME COLUMN complemento_ci_participante TO expedito_ci_participante;
+
+
+---------------------UNIDAD----------------------
+CREATE TABLE public.unidad (
+	id_unidad serial8 NOT NULL,
+	nombre_unidad varchar NOT NULL,
+	abreviatura_unidad varchar NOT NULL,
+	id_evento int8 NOT NULL,
+	CONSTRAINT unidad_pk PRIMARY KEY (id_unidad),
+	CONSTRAINT unidad_fk FOREIGN KEY (id_evento) REFERENCES public.evento(id_evento)
+);
+ALTER TABLE public.unidad DROP CONSTRAINT unidad_fk;
+ALTER TABLE public.unidad DROP COLUMN id_evento;
+ALTER TABLE public.unidad ADD telefono_unidad varchar NULL;
+ALTER TABLE public.unidad ADD pagina_referencia_unidad varchar NULL;
+ALTER TABLE public.unidad ADD correo_contacto_unidad varchar NULL;
+ALTER TABLE public.unidad ADD telefono_alternativo_unidad varchar NULL;
+ALTER TABLE public.unidad ADD ubicacion_unidad varchar NULL;
+ALTER TABLE public.unidad ALTER COLUMN telefono_unidad SET NOT NULL;
+ALTER TABLE public.unidad ALTER COLUMN pagina_referencia_unidad SET NOT NULL;
+ALTER TABLE public.unidad ALTER COLUMN ubicacion_unidad SET NOT NULL;
+
+
+
+----------------------------tipoValoracion------------------
+CREATE TABLE public.tipo_valoracion (
+	id_tipo_valoracion serial8 NOT NULL,
+	nota varchar NOT NULL,
+	estado_valoracion varchar NOT NULL,
+	CONSTRAINT tipo_valoracion_pk PRIMARY KEY (id_tipo_valoracion)
+);
+ALTER TABLE public.tipo_valoracion ADD id_evento int8 NOT NULL;
+ALTER TABLE public.tipo_valoracion ADD CONSTRAINT tipo_valoracion_fk FOREIGN KEY (id_evento) REFERENCES public.evento(id_evento);
+ALTER TABLE public.tipo_valoracion RENAME COLUMN nota TO nota_valoracion;
+ALTER TABLE public.tipo_valoracion DROP CONSTRAINT tipo_valoracion_fk;
+ALTER TABLE public.tipo_valoracion DROP COLUMN id_evento;
+
+--------------------------------tipo documento-------------------------------
+CREATE TABLE public.tipo_documento (
+	id_tipo_documento serial8 NOT NULL,
+	nombre_documento varchar NOT NULL,
+	descripcion_tipo_documento varchar NULL,
+	id_documento int8 NOT NULL,
+	CONSTRAINT tipo_documento_pk PRIMARY KEY (id_tipo_documento),
+	CONSTRAINT tipo_documento_fk FOREIGN KEY (id_documento) REFERENCES public.documento(id_documento)
+);
+ALTER TABLE public.tipo_documento DROP CONSTRAINT tipo_documento_fk;
+ALTER TABLE public.tipo_documento DROP COLUMN id_documento;
+ALTER TABLE public.tipo_documento ADD plantilla varchar NOT NULL;
+//ALTER TABLE public.tipo_documento ADD plantilla varchar NULL;
+ALTER TABLE public.tipo_documento RENAME COLUMN plantilla TO plantilla_tipo_documento;
+
+------------------------------------integrante-------------------------------
+CREATE TABLE public.integrante (
+	id_integrante bigserial NOT NULL,
+	id_usuario int8 NOT NULL,
+	id_evento int8 NOT NULL,
+	id_tipo_valoracion int8 NULL,
+	tipo_integrante varchar NULL,
+	CONSTRAINT integrante_pk PRIMARY KEY (id_integrante),
+	CONSTRAINT "integrante-evento" FOREIGN KEY (id_evento) REFERENCES public.evento(id_evento),
+	CONSTRAINT "integrante-tipo_valoracion" FOREIGN KEY (id_tipo_valoracion) REFERENCES public.tipo_valoracion(id_tipo_valoracion)
+);
+ALTER TABLE public.integrante ADD CONSTRAINT "integrante-usuario" FOREIGN KEY (id_usuario) REFERENCES public.usuario(id_usuario);
+ALTER TABLE public.usuario ALTER COLUMN celular_usuario SET NOT NULL;
+ALTER TABLE public.usuario ALTER COLUMN telefono_usuario DROP NOT NULL;
+ALTER TABLE public.usuario ALTER COLUMN fecha_nacimiento_usuario DROP NOT NULL;
+ALTER TABLE public.usuario ALTER COLUMN lugar_nacimiento_usuario DROP NOT NULL;
+ALTER TABLE public.usuario ALTER COLUMN ubicacion_actual_usuario DROP NOT NULL;
+ALTER TABLE public.usuario ALTER COLUMN estado_civil_usuario DROP NOT NULL;
+
+
+
+
+-------------------integrantes--------------
+
+ALTER TABLE public.integrante ADD tipo_integrante varchar NULL;
+ALTER TABLE public.integrantes RENAME TO integrante;
+ALTER TABLE public.integrante RENAME COLUMN id_integrantes TO id_integrante;
+ALTER TABLE public.integrantes ADD lista_participante varchar NULL;
+ALTER TABLE public.integrantes RENAME TO integrante;
+ALTER TABLE public.integrante RENAME COLUMN id_participante TO id_usuario;
+ALTER TABLE public.integrante RENAME CONSTRAINT "integrantes-participante" TO "integrantes-usuario";
+ALTER TABLE public.integrante RENAME CONSTRAINT "integrantes-evento" TO "integrante-evento";
+ALTER TABLE public.integrante RENAME COLUMN lista_participante TO tipo_participante;
+ALTER TABLE public.integrante RENAME COLUMN tipo_participante TO tipo_integrante;
+ALTER TABLE public.integrante RENAME COLUMN id_integrantes TO id_integrante;
+ALTER TABLE public.integrante DROP CONSTRAINT "integrante-tipo_valoracion";
+
+
+--------------------------USUARIO------------>PARTICIPANTE
+ALTER TABLE public.participante RENAME TO usuario;
+ALTER TABLE public.participante RENAME TO usuario;
+ALTER TABLE public.usuario RENAME COLUMN id_participante TO id_usuario;
+ALTER TABLE public.usuario RENAME COLUMN nombre_participante TO nombre_usuario;
+ALTER TABLE public.usuario RENAME COLUMN apellido_paterno_participante TO apellido_paterno_usuario;
+ALTER TABLE public.usuario RENAME COLUMN apellido_materno_paticipante TO apellido_materno_usuario;
+ALTER TABLE public.usuario RENAME COLUMN ocupacion_participante TO ocupacion_usuario;
+ALTER TABLE public.usuario RENAME COLUMN correo_participante TO correo_usuario;
+ALTER TABLE public.usuario RENAME COLUMN ci_participante TO ci_usuario;
+ALTER TABLE public.usuario RENAME COLUMN expedito_ci_participante TO expedito_ci_usuario;
+ALTER TABLE public.usuario ADD numero_celular_usuario int NULL;
+ALTER TABLE public.usuario ADD numero_celular_alternativo_usuario int NULL;
+ALTER TABLE public.usuario ADD correo_alternativo_usuario varchar NULL;
+ALTER TABLE public.usuario ADD fecha_nacimiento_usuario date NULL;
+ALTER TABLE public.usuario ADD ubicacion_actual_usuario varchar NULL;
+ALTER TABLE public.usuario ADD estado_civil_usuario varchar NULL;
+ALTER TABLE public.usuario ADD ciudad_nacimiento_usuario varchar NULL;
+ALTER TABLE public.usuario ADD genero_usuario varchar NULL;
+ALTER TABLE public.usuario ADD imagen_usuario varchar NULL;
+ALTER TABLE public.usuario RENAME COLUMN ciudad_nacimiento_usuario TO ubicacion_nacimiento_usuario;
+ALTER TABLE public.usuario ALTER COLUMN numero_celular_usuario TYPE varchar USING numero_celular_usuario::varchar;
+ALTER TABLE public.usuario ALTER COLUMN numero_celular_alternativo_usuario TYPE varchar USING numero_celular_alternativo_usuario::varchar;
+ALTER TABLE public.usuario ALTER COLUMN genero_usuario TYPE char USING genero_usuario::char;
+ALTER TABLE public.usuario ALTER COLUMN genero_usuario TYPE character USING genero_usuario::character;
+ALTER TABLE public.usuario ALTER COLUMN genero_usuario SET NOT NULL;
+ALTER TABLE public.usuario ALTER COLUMN ubicacion_nacimiento_usuario SET NOT NULL;
+ALTER TABLE public.usuario ALTER COLUMN fecha_nacimiento_usuario SET NOT NULL;
+ALTER TABLE public.usuario ALTER COLUMN estado_civil_usuario SET NOT NULL;
+ALTER TABLE public.usuario ALTER COLUMN numero_celular_usuario SET NOT NULL;
+ALTER TABLE public.usuario RENAME COLUMN numero_celular_usuario TO celular_usuario;
+ALTER TABLE public.usuario RENAME COLUMN numero_celular_alternativo_usuario TO celular_alternativo_usuario;
+----------------------------------------USUARIO----------
+CREATE TABLE public.usuario (
+	id_usuario bigserial NOT NULL,
+	nombres_usuario varchar NOT NULL,
+	apellido_paterno_usuario varchar NOT NULL,
+	apellido_materno_usuario varchar NOT NULL,
+	genero_usuario char NOT NULL,
+	fecha_nacimiento_usuario date NOT NULL,
+	lugar_nacimiento_usuario varchar NOT NULL,
+	ubicacion_actual_usuario varchar NOT NULL,
+	ocupacion_usuario varchar NOT NULL,
+	correo_usuario varchar NOT NULL,
+	correo_alternativo_usuario varchar NULL,
+	telefono_usuario varchar NOT NULL,
+	celular_usuario varchar NULL,
+	ci_usuario varchar NULL,
+	lugar_expedito_ci_usuario varchar NULL,
+	imagen_usuario varchar NULL,
+	estado_civil_usuario varchar NOT NULL,
+	CONSTRAINT usuario_pk PRIMARY KEY (id_usuario)
+);
+
+---------------userRBAC-----------------
+ALTER TABLE public."user" ADD id_usuario int8 NULL;
+ALTER TABLE public."user" ADD CONSTRAINT "user-perfil-usuario" FOREIGN KEY (id_usuario) REFERENCES public.usuario(id_usuario);
+
+
+

@@ -8,10 +8,14 @@ use Yii;
  * This is the model class for table "evento".
  *
  * @property int $id_evento
- * @property string $nombre_evento
- * @property string $url_validacion
+ * @property string $nombre
  * @property int $id_unidad
+ * @property string|null $url_convocatoria
  * @property string $fecha_inicio
+ * @property string|null $registro_fin
+ * @property string|null $inicio_actividades
+ * @property string|null $fin_actividades
+ * @property string|null $inicio_emision
  * @property string $fecha_fin
  *
  * @property Documento[] $documentos
@@ -34,11 +38,8 @@ class Evento extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nombre_evento', 'url_validacion', 'id_unidad', 'fecha_inicio', 'fecha_fin'], 'required'],
-            [['nombre_evento', 'url_validacion'], 'string'],
-            [['id_unidad'], 'default', 'value' => null],
-            [['id_unidad'], 'integer'],
-            [['fecha_inicio', 'fecha_fin'], 'safe'],
+            [['nombre', 'fecha_inicio', 'fecha_fin'], 'required'],
+            [['nombre', 'url_convocatoria', 'fecha_inicio', 'registro_fin', 'inicio_actividades', 'fin_actividades', 'inicio_emision', 'fecha_fin'], 'string'],
             [['id_unidad'], 'exist', 'skipOnError' => true, 'targetClass' => Unidad::className(), 'targetAttribute' => ['id_unidad' => 'id_unidad']],
         ];
     }
@@ -50,10 +51,14 @@ class Evento extends \yii\db\ActiveRecord
     {
         return [
             'id_evento' => 'Id Evento',
-            'nombre_evento' => 'Nombre Evento',
-            'url_validacion' => 'Url Validacion',
+            'nombre' => 'Nombre',
             'id_unidad' => 'Id Unidad',
+            'url_convocatoria' => 'Url Convocatoria',
             'fecha_inicio' => 'Fecha Inicio',
+            'registro_fin' => 'Registro Fin',
+            'inicio_actividades' => 'Inicio Actividades',
+            'fin_actividades' => 'Fin Actividades',
+            'inicio_emision' => 'Inicio Emision',
             'fecha_fin' => 'Fecha Fin',
         ];
     }
