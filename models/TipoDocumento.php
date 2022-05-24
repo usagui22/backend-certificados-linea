@@ -56,6 +56,6 @@ class TipoDocumento extends \yii\db\ActiveRecord
      */
     public function getDocumentos()
     {
-        return $this->hasMany(Documento::className(), ['id_tipo_documento' => 'id_tipo_documento']);
+        return $this->hasMany(Documento::class, ['id_tipo_documento' => 'id_tipo_documento']);
     }
 }
