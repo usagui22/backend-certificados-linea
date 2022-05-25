@@ -10,22 +10,23 @@ use Yii;
  * @property string $nombres
  * @property string $apellido_paterno
  * @property string $apellido_materno
- * @property string $genero
- * @property string $fecha_nacimiento
+ * @property string|null $genero
+ * @property string|null $fecha_nacimiento
  * @property string|null $lugar_nacimiento
- * @property string|null $ubicacion_actual
- * @property string $ocupacion
- * @property string $correo
+ * @property string|null $direccion_actual
+ * @property string|null $ocupacion
+ * @property string|null $correo
  * @property string|null $correo_alternativo
  * @property string|null $telefono
  * @property string|null $celular
- * @property string $ci
+ * @property string|null $ci
  * @property string|null $lugar_expedito_ci
  * @property string|null $imagen
  * @property string|null $estado_civil
  * @property int $id
  *
  * @property Integrante[] $integrantes
+ * @property RolUsuario[] $rolUsuarios
  */
 class Usuario extends \yii\db\ActiveRecord
 {
@@ -43,8 +44,8 @@ class Usuario extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nombres', 'apellido_paterno', 'apellido_materno', 'genero', 'fecha_nacimiento', 'ocupacion', 'correo', 'ci'], 'required'],
-            [['nombres', 'apellido_paterno', 'apellido_materno', 'lugar_nacimiento', 'ubicacion_actual', 'ocupacion', 'correo', 'correo_alternativo', 'telefono', 'celular', 'ci', 'lugar_expedito_ci', 'imagen', 'estado_civil'], 'string'],
+            [['nombres', 'apellido_paterno', 'apellido_materno'], 'required'],
+            [['nombres', 'apellido_paterno', 'apellido_materno', 'lugar_nacimiento', 'direccion_actual', 'ocupacion', 'correo', 'correo_alternativo', 'telefono', 'celular', 'ci', 'lugar_expedito_ci', 'imagen', 'estado_civil'], 'string'],
             [['fecha_nacimiento'], 'safe'],
             [['genero'], 'string', 'max' => 1],
         ];
@@ -62,7 +63,7 @@ class Usuario extends \yii\db\ActiveRecord
             'genero' => 'Genero',
             'fecha_nacimiento' => 'Fecha Nacimiento',
             'lugar_nacimiento' => 'Lugar Nacimiento',
-            'ubicacion_actual' => 'Ubicacion Actual',
+            'direccion_actual' => 'Direccion Actual',
             'ocupacion' => 'Ocupacion',
             'correo' => 'Correo',
             'correo_alternativo' => 'Correo Alternativo',
@@ -84,5 +85,15 @@ class Usuario extends \yii\db\ActiveRecord
     public function getIntegrantes()
     {
         return $this->hasMany(Integrante::className(), ['id_usuario' => 'id']);
+    }
+
+    /**
+     * Gets query for [[RolUsuarios]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getRolUsuarios()
+    {
+        return $this->hasMany(RolUsuario::className(), ['id_usuario' => 'id']);
     }
 }

@@ -30,11 +30,11 @@ class AuthController extends Controller{
         return parent::beforeAction($action);
     }
 
-    public function actionLogin(){
+    public function actionLoginGoogle(){
         $res = null;
         $params = Yii::$app->getRequest()->getBodyParams();
         $usuario = Usuario::find()
-            ->where(["email" => $params["email"]])
+            ->where(["correo" => $params["correo"]])
             ->one();
         if($usuario){
             Yii::$app->response->statusCode = 200;
@@ -104,7 +104,13 @@ class AuthController extends Controller{
         ];
 
         $model = new Usuario($usuario);
-        return model;
+        if($model->save()){
+            if($this->asignarRol($model->id, "PTTE")){
+                return $model;
+            }else{
+                return null;
+            }
+        }
     }
     protected function registrarUsuario($data){
         $usuario = [
@@ -143,7 +149,7 @@ class AuthController extends Controller{
             "id_usuario"=>$id_usuario,
             "id_rol"=>2
         ];
-        $model = new RolUsuario();
+        $model = new RolUsuario($data);
         if($model->save()){
             return true;
         }else{
