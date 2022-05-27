@@ -19,6 +19,19 @@ $config = [
                 'application/json' => 'yii\web\JsonParser',
             ]
         ],
+        'response' => [
+            //    'format' => \yii\web\Response::FORMAT_JSON,
+            'charset' => 'UTF-8',
+            'on beforeSend' => function ($event) {
+                header("Access-Control-Allow-Origin: *");
+                header("Access-Control-Allow-Methods: *");
+                header("Access-Control-Allow-Headers: *");
+                header("Access-Control-Allow-Credentials: true");
+                header("Access-Control-Request-Headers: *");
+                header("Access-Control-Expose-Headers: *");
+                header("Access-Control-Max-Age: 3600");
+            },
+        ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
@@ -34,7 +47,16 @@ $config = [
             // send all mails to a file by default. You have to set
             // 'useFileTransport' to false and configure transport
             // for the mailer to send real emails.
-            'useFileTransport' => true,
+            'useFileTransport' => false,
+            'transport' => [
+                'class' => 'Swift_SmtpTransport',
+                'host' => 'smtp.gmail.com',
+                'username' => $params['adminEmail'],
+                'password' => $params['password'],
+                'port' => '587',
+                'encryption' => 'tls'
+            ]
+
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
