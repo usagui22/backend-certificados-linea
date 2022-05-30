@@ -27,6 +27,10 @@ class UnidadController extends Controller{
         );
     }
 
+    public function actionListarUnidades(){
+        return $unidad=Unidad::find()->all();
+    }
+
     public function actionCrearUnidad(){
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $unidad =new Unidad();
