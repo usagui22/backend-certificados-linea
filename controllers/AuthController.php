@@ -29,11 +29,41 @@ class AuthController extends Controller{
         $this->enableCsrfValidation = false;
         return parent::beforeAction($action);
     }
+
+    public function actionLogin(){
+        $params = Yii::$app->request->getBodyParams();
+        $usuario = Usuario::find()
+        ->where(["correo" => $params["correo"]])
+        ->one();
+
+        if($usuario){
+            if(Yii::$app->getSecurity()->validatePassword($params['password'],$usuario->password_hash)){
+                $response = [
+                    "status" => true,
+                    "msg" => "Login existoso"
+                ];
+            }else{
+                Yii::$app->response->statusCode = 500;
+                $response = [
+                    "status" => false,
+                    "msg"=> "Verifique sus datos"
+                ];
+            }
+        }else{
+            Yii::$app->response->statusCode = 500;
+            $response = [
+                "status" => false,
+                "msg"=> "Verifique sus datos"
+            ];
+        }
+        return $response;
+    }
     public function actionRegister(){
         $res = null;
         $params = Yii::$app->getRequest()->getBodyParams();
+        
         $usuario = Usuario::find()
-            ->where(["email" => $params["email"]])
+            ->where(["correo" => $params["correo"]])
             ->one();
         if($usuario){
             Yii::$app->response->statusCode = 200;
@@ -102,7 +132,6 @@ class AuthController extends Controller{
             "apellido_materno"=>$data['apellido_materno'],
             "correo"=>$data['correo'],
         ];
-
         $model = new Usuario($usuario);
         if($model->save()){
             if($this->asignarRol($model->id, "PTTE")){
@@ -113,24 +142,26 @@ class AuthController extends Controller{
         }
     }
     protected function registrarUsuario($data){
-        $usuario = [
-            "nombres"=>$data['nombres'],
-            "apellido_paterno"=>$data['apellido_paterno'],
-            "apellido_materno"=>$data['apellido_materno'],
-            "genero"=>$data['genero'],
-            "fecha_nacimiento" => $data['fecha_nacimiento'],
-            "lugar_nacimiento" => $data['lugar_nacimiento'],
-            "direccion_actual"=>$data['direccion_actual'],
-            "ocupacion"=>$data['ocupacion'],
-            "correo"=>$data['correo'],
-            "correo_alternativo"=>$data['correo_aleternativo'],
-            "telefono"=>$data['telefono'],
-            "ci"=>$data['celular'],
-            "lugar_expedto_ci"=>$data['lugar_expedito_ci'],
-            "imagen"=>$data['imagen'],
-            "estado_civil"=>$data['estado_civil'],
-        ];
-        $model = new Usuario($usuario);
+        // $usuario = [
+        //     "nombres"=>$data['nombres'],
+        //     "apellido_paterno"=>$data['apellido_paterno'],
+        //     "apellido_materno"=>$data['apellido_materno'],
+        //     "genero"=>$data['genero'],
+        //     "fecha_nacimiento" => $data['fecha_nacimiento'],
+        //     "lugar_nacimiento" => $data['lugar_nacimiento'],
+        //     "direccion_actual"=>$data['direccion_actual'],
+        //     "ocupacion"=>$data['ocupacion'],
+        //     "correo"=>$data['correo'],
+        //     "correo_alternativo"=>$data['correo_aleternativo'],
+        //     "telefono"=>$data['telefono'],
+        //     "ci"=>$data['ci'],
+        //     "lugar_expedto_ci"=>$data['lugar_expedito_ci'],
+        //     "imagen"=>$data['imagen'],
+        //     "estado_civil"=>$data['estado_civil'],
+        // ];
+        $contra = Yii::$app->getSecurity()->generatePasswordHash("123456789");
+        print_r($contra);
+        $model = new Usuario($data);
         if($model->save()){
 
             if($this->asignarRol($model->id, "PTTE")){
@@ -139,7 +170,7 @@ class AuthController extends Controller{
                 return null;
             }
         }
-        return $usuario;
+        return $model;
     }
     protected function asignarRol($id_usuario, $rol)
     {
