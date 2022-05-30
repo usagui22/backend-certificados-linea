@@ -24,6 +24,9 @@ use Yii;
  * @property string|null $imagen
  * @property string|null $estado_civil
  * @property int $id
+ * @property string|null $password_hash
+ * @property string|null $created_at
+ * @property string|null $update_at
  *
  * @property Integrante[] $integrantes
  * @property RolUsuario[] $rolUsuarios
@@ -45,8 +48,8 @@ class Usuario extends \yii\db\ActiveRecord
     {
         return [
             [['nombres', 'apellido_paterno', 'apellido_materno'], 'required'],
-            [['nombres', 'apellido_paterno', 'apellido_materno', 'lugar_nacimiento', 'direccion_actual', 'ocupacion', 'correo', 'correo_alternativo', 'telefono', 'celular', 'ci', 'lugar_expedito_ci', 'imagen', 'estado_civil'], 'string'],
-            [['fecha_nacimiento'], 'safe'],
+            [['nombres', 'apellido_paterno', 'apellido_materno', 'lugar_nacimiento', 'direccion_actual', 'ocupacion', 'correo', 'correo_alternativo', 'telefono', 'celular', 'ci', 'lugar_expedito_ci', 'imagen', 'estado_civil', 'password_hash'], 'string'],
+            [['fecha_nacimiento', 'created_at', 'update_at'], 'safe'],
             [['genero'], 'string', 'max' => 1],
         ];
     }
@@ -74,6 +77,9 @@ class Usuario extends \yii\db\ActiveRecord
             'imagen' => 'Imagen',
             'estado_civil' => 'Estado Civil',
             'id' => 'ID',
+            'password_hash' => 'Password Hash',
+            'created_at' => 'Created At',
+            'update_at' => 'Update At',
         ];
     }
 

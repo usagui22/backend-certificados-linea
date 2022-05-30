@@ -29,6 +29,38 @@ class AuthController extends Controller{
         $this->enableCsrfValidation = false;
         return parent::beforeAction($action);
     }
+    public function actionRegister(){
+        $res = null;
+        $params = Yii::$app->getRequest()->getBodyParams();
+        $usuario = Usuario::find()
+            ->where(["email" => $params["email"]])
+            ->one();
+        if($usuario){
+            Yii::$app->response->statusCode = 200;
+            $res = [
+                "status" => true,
+                "msg" => "Login exitoso",
+                //                "token" =>$usuario->access_token
+            ];
+        }else{
+            $usuarioRegistrado = $this->registrarUsuario($params);
+            if($usuarioRegistrado){
+                Yii::$app->response->statusCode = 200;
+                $res = [
+                    "status" => true,
+                    "msg" => "Login existoso",
+                    //                    "token" => $usuarioRegistrado->access_token
+                ];
+            }else{
+                Yii::$app->response->statusCode = 400;
+                $res = [
+                    "status" => false,
+                    "msg" => "Revise sus datos",
+                ];
+            }
+        }
+        return $res;
+    }
 
     public function actionLoginGoogle(){
         $res = null;
@@ -51,38 +83,6 @@ class AuthController extends Controller{
                     "status" => true,
                     "msg" => "Login existoso",
 //                    "token" => $usuarioRegistrado->access_token
-                ];
-            }else{
-                Yii::$app->response->statusCode = 400;
-                $res = [
-                    "status" => false,
-                    "msg" => "Revise sus datos",
-                ];
-            }
-        }
-        return $res;
-    }
-    public function actionRegister(){
-        $res = null;
-        $params = Yii::$app->getRequest()->getBodyParams();
-        $usuario = Usuario::find()
-            ->where(["correo" => $params["correo"]])
-            ->one();
-        if($usuario){
-            Yii::$app->response->statusCode = 200;
-            $res = [
-                "status" => true,
-                "msg" => "Login exitoso",
-                //"token" =>$usuario->access_token
-            ];
-        }else{
-            $usuarioRegistrado = $this->registrarUsuario($params);
-            if($usuarioRegistrado){
-                Yii::$app->response->statusCode = 200;
-                $res = [
-                    "status" => true,
-                    "msg" => "Login existoso",
-                    //"token" => $usuarioRegistrado->access_token
                 ];
             }else{
                 Yii::$app->response->statusCode = 400;
@@ -139,8 +139,6 @@ class AuthController extends Controller{
                 return null;
             }
         }
-
-
         return $model;
     }
     protected function asignarRol($id_usuario, $rol)
