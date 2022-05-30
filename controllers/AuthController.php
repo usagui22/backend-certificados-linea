@@ -66,14 +66,14 @@ class AuthController extends Controller{
         $res = null;
         $params = Yii::$app->getRequest()->getBodyParams();
         $usuario = Usuario::find()
-            ->where(["email" => $params["email"]])
+            ->where(["correo" => $params["correo"]])
             ->one();
         if($usuario){
             Yii::$app->response->statusCode = 200;
             $res = [
                 "status" => true,
                 "msg" => "Login exitoso",
-                //                "token" =>$usuario->access_token
+                //"token" =>$usuario->access_token
             ];
         }else{
             $usuarioRegistrado = $this->registrarUsuario($params);
@@ -82,7 +82,7 @@ class AuthController extends Controller{
                 $res = [
                     "status" => true,
                     "msg" => "Login existoso",
-                    //                    "token" => $usuarioRegistrado->access_token
+                    //"token" => $usuarioRegistrado->access_token
                 ];
             }else{
                 Yii::$app->response->statusCode = 400;
@@ -113,24 +113,24 @@ class AuthController extends Controller{
         }
     }
     protected function registrarUsuario($data){
-        $usuario = [
-            "nombres"=>$data['nombres'],
-            "apellido_paterno"=>$data['apellido_paterno'],
-            "apellido_materno"=>$data['apellido_materno'],
-            "genero"=>$data['genero'],
-            "fecha_nacimiento" => $data['fecha_nacimiento'],
-            "lugar_nacimiento" => $data['lugar_nacimiento'],
-            "direccion_actual"=>$data['direccion_actual'],
-            "ocupacion"=>$data['ocupacion'],
-            "correo"=>$data['correo'],
-            "correo_alternativo"=>$data['correo_aleternativo'],
-            "telefono"=>$data['telefono'],
-            "ci"=>$data['celular'],
-            "lugar_expedto_ci"=>$data['lugar_expedito_ci'],
-            "imagen"=>$data['imagen'],
-            "estado_civil"=>$data['estado_civil'],
-        ];
-        $model = new Usuario($usuario);
+        // $usuario = [
+        //     "nombres"=>$data['nombres'],
+        //     "apellido_paterno"=>$data['apellido_paterno'],
+        //     "apellido_materno"=>$data['apellido_materno'],
+        //     "genero"=>$data['genero'],
+        //     "fecha_nacimiento" => $data['fecha_nacimiento'],
+        //     "lugar_nacimiento" => $data['lugar_nacimiento'],
+        //     "direccion_actual"=>$data['direccion_actual'],
+        //     "ocupacion"=>$data['ocupacion'],
+        //     "correo"=>$data['correo'],
+        //     "correo_alternativo"=>$data['correo_aleternativo'],
+        //     "telefono"=>$data['telefono'],
+        //     "ci"=>$data['ci'],
+        //     "lugar_expedto_ci"=>$data['lugar_expedito_ci'],
+        //     "imagen"=>$data['imagen'],
+        //     "estado_civil"=>$data['estado_civil'],
+        // ];
+        $model = new Usuario($data);
         if($model->save()){
 
             if($this->asignarRol($model->id, "PTTE")){
@@ -141,7 +141,7 @@ class AuthController extends Controller{
         }
 
 
-        return $usuario;
+        return $model;
     }
     protected function asignarRol($id_usuario, $rol)
     {
