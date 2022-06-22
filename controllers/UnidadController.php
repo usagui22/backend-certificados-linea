@@ -87,4 +87,23 @@ class UnidadController extends Controller{
     public function actionListarUsuarios(){
         return Usuario::find()->all();
     }
+    public function actionEncargado(){
+        $params = Yii::$app->request->getBodyParams();
+        $unidad = Unidad::findOne($params["id_unidad"]);
+        if($unidad){
+            $unidad["encargado"] = $params["id_encargado"];
+            if($unidad->save()){
+                return [
+                    "status" => true,
+                    "msg" => "Encargado registrado con éxito"
+                ];
+            }
+        }
+
+        return [
+            "status" => false,
+            "msg" => "Error al registrar el encargado"
+        ];
+    }
 }
+
