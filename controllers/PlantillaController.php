@@ -7,6 +7,7 @@ use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
 class PlantillaController extends Controller{
     public function behaviors()
@@ -27,15 +28,21 @@ class PlantillaController extends Controller{
     }
     public function actionCrearPlantilla(){
         $plantilla=new Plantilla();
+        $msg=null;
         $datos=Yii::$app->request->getBodyParams();
+        $img=UploadedFile::getInstance($plantilla,'plantilla');
         if(isset($datos)){
-            $plantilla->attributes=$datos;
+            
+            $plantilla->nombre=$datos['nombre'];
+            $plantilla->descripcion=$datos['descripcion'];
+            $plantilla->plantilla='http://'.$_SERVER['HTTP_HOST'].'/'.$this->guardarImagen($img);
             if($plantilla->validate()&& $plantilla->save()){
-                return $plantilla;
+                $msg=["guardado"=>true,"plantilla"=>$plantilla];
             }else{
-                return $plantilla->getErrors();
+                $msg=["guardado"=>false,"plantilla"=>$plantilla->getErrors()];
             }
         }
+        return $msg;
     }
 
     public function actionEditarPlantilla($id_plantilla){
@@ -53,5 +60,15 @@ class PlantillaController extends Controller{
 
     public function actionEliminarPlantilla($id_plan){
         return Plantilla::findOne($id_plan)->delete()?print_r("eliminado"):print_r("Error id incorrecto");
+    }
+
+    public function guardarImagen($img){
+        $ruta=null;
+        if(file_exists($img)){
+            print_r($img);
+            exit();
+            $ruta="/documents/images/"."_".$img;            
+        }
+        return $ruta;
     }
 }

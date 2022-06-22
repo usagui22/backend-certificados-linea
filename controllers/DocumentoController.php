@@ -4,11 +4,13 @@ namespace app\controllers;
 use app\models\Documento;
 use app\models\Evento;
 use app\models\Plantilla;
+use app\models\Usuario;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
 class DocumentoController extends Controller{
     public function behaviors()
@@ -37,12 +39,16 @@ class DocumentoController extends Controller{
         //$this->ruleta(5);
         //$clave=crypt();
         if (isset($params)) {
-            $documento['tipo_documento']=$params['tipo_documento'];
+            $documento['nombre']=$params['nombre'];
             $documento['hash']=Yii::$app->getSecurity()->generatePasswordHash($clave);
             //$documento['hash']=sha1($clave);
-            //$documento['confirmado']=preguntarEstado();
-            $documento['id_tipo_documento']=$this->selectTipo($params['nombre_documento']);
-            $documento['id_evento']=$this->selectEvento($params['nombre_evento']);
+            //$documento['fecha_confirmacion']=preguntarEstado();
+            // $documento['id_tipo_documento']=$this->selectTipo($params['nombre_documento']);
+            $documento['nota_valoracion']=$params['nota_valoracion'];            
+            $documento['id_evento']=$this->selectEvento($params['nombre']);
+            $documento['id_plantilla']=$this->selectPlantilla($params['nombre']);
+            $documento['path']='http://'.$_SERVER['HTTP_HOST'].'/'.$this->generarPath($params['file']);
+
             if ($documento->validate()&&$documento->save()) {
                 return $documento;
               
@@ -77,19 +83,19 @@ class DocumentoController extends Controller{
         $id_res=null;
         $evento=Evento::find()
         ->select('id_evento')
-        ->where(['nombre_evento' => $nameEvento])
+        ->where(['nombre' => $nameEvento])
         ->one();
         $id_res=$evento['id_evento'];
         return $id_res;
     }
-    private function selectTipo($nameTipo)
+    private function selectPlantilla($namePlantilla)
     {   
         $id_encontrado=null;
         $tipo=Plantilla::find()
-        ->select('id_tipo_documento')
-        ->where(['nombre_documento'=>$nameTipo])
+        ->select('id_plantilla')
+        ->where(['nombre'=>$namePlantilla])
         ->one();
-        $id_encontrado = $tipo['id_tipo_documento'];
+        $id_encontrado = $tipo['id_plantilla'];
         return $id_encontrado;
     }
     // private function ruleta($vueltas){
@@ -102,4 +108,36 @@ class DocumentoController extends Controller{
     //     }
     //     return $claveRes;
     // }
+    
+    public function actionCompartirArchivo($doc){        
+        $link_doc=null;
+        if(isset($doc)){            
+            $doc=base64_decode($doc);            
+            $key=$this->generarToken(10);            
+            // $file->saveAs('archivos/' . $file->baseName . '.' . $file->extension);
+            // $link_doc=UploadedFile::getInstance($doc,'file');            
+            // $link_doc= \Yii::$app->basePath."/certificates/"."?doc=$doc&key=".$key; 
+
+            //almacenar en carpeta con llave de validacion y hash, generar link de descarga externa
+        }
+        return $link_doc;
+    }
+    
+    public function generarPath($doc){
+        $archivo_validado=null;        
+        if(file_exists($doc)){
+            $archivo_validado=$this->generarHash($doc);
+            $ruta = "documents/certificates/" . "_" .$this->generarToken(5).$archivo_validado;
+        }
+        return $ruta;
+    }    
+    
+    private function generarToken($tam){
+        $cadena="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
+        $token=null;
+        for ($r=0; $r < $tam; $r++) { 
+            $token.=$cadena[rand(0,62)];
+        }
+        return $token;
+    }
 }

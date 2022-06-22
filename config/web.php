@@ -20,7 +20,7 @@ $config = [
             ]
         ],
         'response' => [
-            //    'format' => \yii\web\Response::FORMAT_JSON,
+            'format' => \yii\web\Response::FORMAT_JSON,
             'charset' => 'UTF-8',
             'on beforeSend' => function ($event) {
                 header("Access-Control-Allow-Origin: *");

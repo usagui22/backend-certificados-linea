@@ -2,6 +2,8 @@
 namespace app\controllers;
 
 use app\models\AccountDataEmail;
+use app\models\Rol;
+use app\models\RolUsuario;
 use app\models\Usuario;
 use Yii;
 use yii\filters\AccessControl;
@@ -95,5 +97,38 @@ class UsuarioController extends Controller{
             }
         }
         return $model;
+    }
+
+    public function actionDatos($id){
+        $usuario = Usuario::findOne($id);
+        $rolUser= RolUsuario::find()->where(['id_usuario'=>$usuario['id']])->one();
+        $rol=Rol::findOne($rolUser['id_rol']);
+        $response=[
+            'nombres'=>$usuario->nombres,
+            'apellido_paterno'=>$usuario->apellido_paterno,
+            'apellido_materno'=>$usuario->apellido_materno,
+            'rol'=>$rol->rol
+        ];
+        return $response;
+    }
+    
+    public function actionEditarUsuario($id){
+        $usuario=Usuario::findOne($id);
+        $msj=null;
+        $nuevo = Yii::$app->request->getBodyParams();
+        if(!isset($nuevo)){
+            $usuario->attributes=$nuevo;
+            if($usuario->validate()){
+                $usuario->save();
+                $msj=["actualizado"=>true,"usuario"=>$usuario];
+            }else{
+                $msj=["actualizado"=>false,"usuario"=>$usuario->getErrors()];
+            }
+        }
+        return $msj;
+    }
+    
+    public function actionListarUsuario(){
+        return Usuario::find()->all();
     }
 }

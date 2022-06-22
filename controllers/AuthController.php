@@ -31,7 +31,8 @@ class AuthController extends Controller{
     }
 
     public function actionLogin(){
-        $params = Yii::$app->request->getBodyParams();
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $params = Yii::$app->getRequest()->getBodyParams();
         $usuario = Usuario::find()
         ->where(["correo" => $params["correo"]])
         ->one();
@@ -40,17 +41,18 @@ class AuthController extends Controller{
             if(Yii::$app->getSecurity()->validatePassword($params['password'],$usuario->password_hash)){
                 $response = [
                     "status" => true,
-                    "msg" => "Login existoso"
+                    "msg" => "Login existoso",
+                    "id" =>$usuario->id
                 ];
             }else{
-                Yii::$app->response->statusCode = 500;
+                Yii::$app->response->statusCode = 403;
                 $response = [
                     "status" => false,
                     "msg"=> "Verifique sus datos"
                 ];
             }
         }else{
-            Yii::$app->response->statusCode = 500;
+            Yii::$app->response->statusCode = 403;
             $response = [
                 "status" => false,
                 "msg"=> "Verifique sus datos"
