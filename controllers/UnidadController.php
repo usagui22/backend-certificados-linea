@@ -27,18 +27,25 @@ class UnidadController extends Controller{
         );
     }
 
+
     public function actionCrearUnidad(){
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        $unidad =new Unidad();
         $datos=Yii::$app->request->getBodyParams();
-        if(isset($unidad)){
-            $unidad->attributes=$datos;
-            if($unidad->validate()&&$unidad->save()){
-                return $unidad;
-            }else{
-                return $unidad->getErrors();
-            }
+        $unidad =new Unidad($datos);
+        if($unidad->save()){
+            return [
+                "status" => true,
+                "msg" => "Unidad registrada con éxito",
+                "unidad" => $unidad
+            ];
+        }else{
+            return [
+                "status" => false,
+                "msg" => "Hubo un error al registrar"
+            ];
         }
+           
+        
     }
 
     public function actionEditarUnidad($id_ed){
@@ -60,5 +67,24 @@ class UnidadController extends Controller{
 
     public function actionEliminarUnidad($id_eli){
         return Unidad::findOne($id_eli)?"eliminado":"error unidad no existe";
+    }
+
+    public function actionEncargado(){
+        $params = Yii::$app->request->getBodyParams();
+        $unidad = Unidad::findOne($params["id_unidad"]);
+        if($unidad){
+            $unidad["encargado"] = $params["id_encargado"];
+            if($unidad->save()){
+                return [
+                    "status" => true,
+                    "msg" => "Encargado registrado con éxito"
+                ];
+            }
+        }
+
+        return [
+            "status" => false,
+            "msg" => "Error al registrar el encargado"
+        ];
     }
 }

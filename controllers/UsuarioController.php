@@ -2,6 +2,7 @@
 namespace app\controllers;
 
 use app\models\AccountDataEmail;
+use app\models\Unidad;
 use app\models\Usuario;
 use Yii;
 use yii\filters\AccessControl;
@@ -29,7 +30,34 @@ class UsuarioController extends Controller{
         $this->enableCsrfValidation = false;
         return parent::beforeAction($action);
     }
+    private function verificarResponsable($id){
+        $usuario = Unidad::find()
+        ->where(["responsable"=>$id])
+        ->one();
 
+        if($usuario){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    public function actionGetUsuarios(){
+        $usuarios = Usuario::find()
+        ->select(["id", "nombres", "apellido_materno", "apellido_paterno"])
+        ->all();
+        $array = [];
+        foreach($usuarios as $usuario){
+            $exist = $this->verificarResponsable($usuario["id"]);
+            if(!$exist){
+                array_push($array, $usuario);
+            }
+        }
+
+        return [
+            "status" => true,
+            "usuarios" => $array
+        ];
+    }
     public function actionRegistrarExcel(){
         $res = null;
         $params = Yii::$app->request->getBodyParams();
