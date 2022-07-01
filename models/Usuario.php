@@ -27,9 +27,11 @@ use Yii;
  * @property string|null $password_hash
  * @property string|null $created_at
  * @property string|null $update_at
+ * @property int|null $id_rol
+ * @property int|null $codsis
  *
  * @property Integrante[] $integrantes
- * @property RolUsuario[] $rolUsuarios
+ * @property Rol $rol
  */
 class Usuario extends \yii\db\ActiveRecord
 {
@@ -50,7 +52,10 @@ class Usuario extends \yii\db\ActiveRecord
             [['nombres', 'apellido_paterno', 'apellido_materno'], 'required'],
             [['nombres', 'apellido_paterno', 'apellido_materno', 'lugar_nacimiento', 'direccion_actual', 'ocupacion', 'correo', 'correo_alternativo', 'telefono', 'celular', 'ci', 'lugar_expedito_ci', 'imagen', 'estado_civil', 'password_hash'], 'string'],
             [['fecha_nacimiento', 'created_at', 'update_at'], 'safe'],
+            [['id_rol', 'codsis'], 'default', 'value' => null],
+            [['id_rol', 'codsis'], 'integer'],
             [['genero'], 'string', 'max' => 1],
+            [['id_rol'], 'exist', 'skipOnError' => true, 'targetClass' => Rol::className(), 'targetAttribute' => ['id_rol' => 'id_rol']],
         ];
     }
 
@@ -80,6 +85,8 @@ class Usuario extends \yii\db\ActiveRecord
             'password_hash' => 'Password Hash',
             'created_at' => 'Created At',
             'update_at' => 'Update At',
+            'id_rol' => 'Id Rol',
+            'codsis' => 'Codsis',
         ];
     }
 
@@ -94,12 +101,12 @@ class Usuario extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[RolUsuarios]].
+     * Gets query for [[Rol]].
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getRolUsuarios()
+    public function getRol()
     {
-        return $this->hasMany(RolUsuario::className(), ['id_usuario' => 'id']);
+        return $this->hasOne(Rol::className(), ['id_rol' => 'id_rol']);
     }
 }

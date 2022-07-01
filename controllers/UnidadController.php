@@ -1,6 +1,7 @@
 <?php
 namespace app\controllers;
 
+use app\models\Rol;
 use app\models\Unidad;
 use app\models\Usuario;
 use Yii;
@@ -59,7 +60,10 @@ class UnidadController extends Controller{
             }else{
                  $msj=["guardado"=>false, "unidad"=>$unidad->getErrors()];
             }
+        }else{
+            $msj="no han llegado datos a la base de datos";
         }
+
         return $msj;
     }
 
@@ -84,9 +88,20 @@ class UnidadController extends Controller{
         return Unidad::findOne($id_eli)?"eliminado":"error unidad no existe";
     }
 
-    public function actionListarUsuarios(){
-        return Usuario::find()->all();
+    public function actionListarResponsables(){
+        $usuarios =  Usuario::find()
+        ->select(["nombres", "apellido_paterno","apellido_materno"])
+        ->where(["id_rol" =>1])
+        //->where("id_rol = 1")
+        // ->andWhere(rol=="RSP")
+        ->all();
+
+        // foreach($usuarios as $u){
+        //     $u->rol->rol;
+        // }    
+        return $usuarios;
     }
+
     public function actionEncargado(){
         $params = Yii::$app->request->getBodyParams();
         $unidad = Unidad::findOne($params["id_unidad"]);
@@ -104,6 +119,27 @@ class UnidadController extends Controller{
             "status" => false,
             "msg" => "Error al registrar el encargado"
         ];
+    }
+
+    public function actionCambiarResponsable($id_resp,$id_uni){
+        $unidad=Unidad::findOne($id_uni);
+        $usuario=Usuario::findOne($id_resp);
+        $msj="";
+
+        if($unidad){
+            if($usuario->id_rol=='2'){
+                $usuario->id_rol='1';
+                $unidad->responsable=$id_resp; 
+                $unidad->save();
+                $usuario->save();               
+                $msj="La unidad cambio el responsable";
+            }else{
+                $msj="El usuario no puede ser responsable de unidad";
+            }
+        }else{
+            $msj="El identificador no es el correcto";
+        }
+        return $msj;
     }
 }
 

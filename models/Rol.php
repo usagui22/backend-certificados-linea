@@ -8,10 +8,10 @@ use Yii;
  * This is the model class for table "rol".
  *
  * @property int $id_rol
- * @property string $rol
+ * @property string $nombre
  * @property string|null $descripcion
  *
- * @property RolUsuario[] $rolUsuarios
+ * @property Usuario[] $usuarios
  */
 class Rol extends \yii\db\ActiveRecord
 {
@@ -29,8 +29,8 @@ class Rol extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['rol'], 'required'],
-            [['rol', 'descripcion'], 'string'],
+            [['nombre'], 'required'],
+            [['nombre', 'descripcion'], 'string'],
         ];
     }
 
@@ -41,18 +41,18 @@ class Rol extends \yii\db\ActiveRecord
     {
         return [
             'id_rol' => 'Id Rol',
-            'rol' => 'Rol',
+            'nombre' => 'Nombre',
             'descripcion' => 'Descripcion',
         ];
     }
 
     /**
-     * Gets query for [[RolUsuarios]].
+     * Gets query for [[Usuarios]].
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getRolUsuarios()
+    public function getUsuarios()
     {
-        return $this->hasMany(RolUsuario::className(), ['id_rol' => 'id_rol']);
+        return $this->hasMany(Usuario::class, ['id_rol' => 'id_rol']);
     }
 }

@@ -140,4 +140,8 @@ class DocumentoController extends Controller{
         }
         return $token;
     }
+
+    public function actionListarDocumento(){
+        $documento=Documento::find()->all();
+    }
 }

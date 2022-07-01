@@ -126,7 +126,7 @@ class UsuarioController extends Controller{
         }
         return $model;
     }
-
+    
     public function actionDatos($id){
         $usuario = Usuario::findOne($id);
         $rolUser= RolUsuario::find()->where(['id_usuario'=>$usuario['id']])->one();
@@ -159,4 +159,41 @@ class UsuarioController extends Controller{
     public function actionListarUsuario(){
         return Usuario::find()->all();
     }
+    public function actionListarCargos(){
+        $cargos=Rol::find()
+        ->select(["id_rol","nombre"])        
+        ->all();        
+                
+        return $cargos;
+    }
+
+    public function actionRegistrarUsuario(){
+        $usuario=new Usuario();
+        $params = Yii::$app->request->getBodyParams();
+        $me="";
+        if(isset($usuario)){
+            $usuario->attributes=$params;                        
+            $pass = UtilController::generatePassword();
+            $usuario->password_hash = $pass;
+
+            if($usuario->validate()){
+                $usuario->save();
+                $me=["ok"=>true,"usuario"=>$usuario];
+                if(UtilController::asignarRol($usuario->id)){
+                    $email = new AccountDataEmail();
+                    if($email->Account($usuario)){
+                    return $usuario;
+                    }else{
+                        return null;
+                    }
+                }else{
+                    return null;
+                }
+            }else{
+                $me=["ok"=>false,"usuario"=>$usuario->getErrors()];
+            }
+        }
+        return $me;
+    }
+   
 }

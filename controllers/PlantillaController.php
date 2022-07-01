@@ -30,12 +30,16 @@ class PlantillaController extends Controller{
         $plantilla=new Plantilla();
         $msg=null;
         $datos=Yii::$app->request->getBodyParams();
-        $img=UploadedFile::getInstance($plantilla,'plantilla');
+        //$file = base64_decode($basePhp[1]);
+        //$img=UploadedFile::getInstance($plantilla,'plantilla');
+        $img_plan=$_POST['plantilla'];
+        $c_img=explode(',',$img_plan);
+        $img=base64_decode($c_img[1]);
         if(isset($datos)){
             
             $plantilla->nombre=$datos['nombre'];
             $plantilla->descripcion=$datos['descripcion'];
-            $plantilla->plantilla='http://'.$_SERVER['HTTP_HOST'].'/'.$this->guardarImagen($img);
+            $plantilla->plantilla='http://'.$_SERVER['HTTP_HOST'].'/'.$this->guardarImagen($img, $datos['nombre']);
             if($plantilla->validate()&& $plantilla->save()){
                 $msg=["guardado"=>true,"plantilla"=>$plantilla];
             }else{
@@ -62,12 +66,11 @@ class PlantillaController extends Controller{
         return Plantilla::findOne($id_plan)->delete()?print_r("eliminado"):print_r("Error id incorrecto");
     }
 
-    public function guardarImagen($img){
+    public function guardarImagen($img,$nombre){
         $ruta=null;
-        if(file_exists($img)){
-            print_r($img);
-            exit();
-            $ruta="/documents/images/"."_".$img;            
+        if(isset($img)){           
+            $ruta="/documents/plantillas/".$nombre.$img;   
+            file_put_contents($ruta,$img);
         }
         return $ruta;
     }
