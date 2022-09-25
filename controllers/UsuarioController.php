@@ -195,5 +195,12 @@ class UsuarioController extends Controller{
         }
         return $me;
     }
-   
+
+    public function actionListarParticipantes(){
+        $participantes = Usuario::find()
+        ->select(["nombres", "apellido_paterno", "apellido_materno"])
+        ->where(["id_rol"=>2])
+        ->all();
+        return $participantes;
+    }
 }

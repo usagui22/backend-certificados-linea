@@ -25,13 +25,25 @@ class EventoController extends Controller{
             ]
         );        
     }
+    public function beforeAction($action)
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        if (Yii::$app->getRequest()->getMethod() === 'OPTIONS') {
+            Yii::$app->getResponse()->getHeaders()->set('Allow', 'POST GET PUT');
+            Yii::$app->end();
+        }
+        $this->enableCsrfValidation = false;
+        return parent::beforeAction($action);
+    }
+
     public function actionCrearEvento(){
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $evento = new Evento();
         $valores =Yii::$app->request->getBodyParams();
+        $msj="";
         if(isset($valores)) {
             $evento->nombre=$valores['nombre'];
-            $evento->id_unidad=$this->getIdxNombre([$valores['nombre']]);
+            $evento->id_unidad=$this->getIdxNombre([$valores['nombre_unidad']]);
             $evento->url_convocatoria=$valores['url_convocatoria'];            
             $evento->fecha_inicio=$valores['fecha_inicio'];
             $evento->registro_fin=$valores['registro_fin'];
@@ -40,14 +52,15 @@ class EventoController extends Controller{
             $evento->inicio_emision=$valores['inicio_emision'];
             $evento->fecha_fin=$valores['fecha_fin'];
             if($evento->validate()&&$evento->save()){
-                return $evento;
+                $msj=["ok"=>true,"evento"=>$evento];
             }else{
-                return $evento->getErrors();
+                $msj=["ok"=>false,"evento"=>$evento->getErrors()];
             }
 
         }
-
+        return $msj;
     }
+
     public function actionEditarEvento($id_cambiar){
         $evento =Evento::findOne($id_cambiar);
         $nuevo = Yii::$app->request->getBodyParams();
@@ -63,6 +76,7 @@ class EventoController extends Controller{
     public function actionEliminarEvento($id_bor){
         return Evento::findOne($id_bor)->delete()?"eliminado":"Error al eliminar";
     }
+
     private function getIdxNombre($nombre){
         $id_encontrado=null;
         $unidad=Unidad::find()
@@ -74,5 +88,19 @@ class EventoController extends Controller{
             $id_encontrado=$unidad['id_unidad'];
         }
         return $id_encontrado;
+    }
+//listar eventos con el nombre de la unidad en vez del identificador
+    public function actionListarEventos(){
+        $eventos=Evento::find()                
+        ->all();             
+        return $eventos;
+    }
+
+    public function verNombre($id_uni){
+        $nombre=Unidad::findOne($id_uni);
+        return $nombre;
+    }
+    public function actionGetEvento($id_editar){
+        return Evento::findOne($id_editar);
     }
 }

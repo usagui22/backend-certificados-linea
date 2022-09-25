@@ -19,6 +19,8 @@ class Plantilla extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
+    public $file;
+
     public static function tableName()
     {
         return 'plantilla';
@@ -31,7 +33,8 @@ class Plantilla extends \yii\db\ActiveRecord
     {
         return [
             [['nombre'], 'required'],
-            [['nombre', 'descripcion', 'plantilla'], 'string'],
+            [['nombre', 'descripcion','plantilla'], 'string'],            
+            [['file'],'file', 'extensions' => 'png, jpg'],
         ];
     }
 
@@ -44,7 +47,8 @@ class Plantilla extends \yii\db\ActiveRecord
             'id_plantilla' => 'Id Plantilla',
             'nombre' => 'Nombre',
             'descripcion' => 'Descripcion',
-            'plantilla' => 'Plantilla',
+            
+            'file' => 'Plantilla',
         ];
     }
 
@@ -55,6 +59,7 @@ class Plantilla extends \yii\db\ActiveRecord
      */
     public function getDocumentos()
     {
-        return $this->hasMany(Documento::className(), ['id_plantilla' => 'id_plantilla']);
+        return $this->hasMany(Documento::class, ['id_plantilla' => 'id_plantilla']);
     }
+
 }

@@ -29,7 +29,16 @@ class DocumentoController extends Controller{
             ]
         );
     }
-
+    public function beforeAction($action)
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        if (Yii::$app->getRequest()->getMethod() === 'OPTIONS') {
+            Yii::$app->getResponse()->getHeaders()->set('Allow', 'POST GET PUT');
+            Yii::$app->end();
+        }
+        $this->enableCsrfValidation = false;
+        return parent::beforeAction($action);
+    }
     public function actionCrearDocumento()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
@@ -37,6 +46,7 @@ class DocumentoController extends Controller{
         $params=Yii::$app->request->getBodyParams();        
         $clave="crypt";
         //$this->ruleta(5);
+        
         //$clave=crypt();
         if (isset($params)) {
             $documento['nombre']=$params['nombre'];
@@ -109,6 +119,7 @@ class DocumentoController extends Controller{
     //     return $claveRes;
     // }
     
+
     public function actionCompartirArchivo($doc){        
         $link_doc=null;
         if(isset($doc)){            
@@ -142,6 +153,81 @@ class DocumentoController extends Controller{
     }
 
     public function actionListarDocumento(){
-        $documento=Documento::find()->all();
+        $documentos=Documento::find()->all();
+        // $msaje="";
+        // if(empty($documentos)){
+        //     $msaje="La tabla no contiene datos ";
+        //     return $msaje;
+        // }else{
+        //     $msaje="La tabla esta cargando su contenido";
+        //     return $documentos;
+        // } 
+        return $documentos;               
     }
+    public function actionSincronizar($ci_usuario,$notaEvento,$codSis){
+        $buscarCuenta=Usuario::findOne($ci_usuario);
+        $msjeror="";
+        if($buscarCuenta->ci==$ci_usuario){
+            $buscarCuenta->nota_valoracion=$notaEvento;
+            if($buscarCuenta->validate()){
+                $buscarCuenta->save();
+            }else{
+                $msjeror="no se encuentra el usuario ";
+            }
+        }else{
+            $buscarCuenta=Usuario::findOne($codSis);
+            if($buscarCuenta->codsis==$codSis){
+                $buscarCuenta->nota_valoracion=$notaEvento;                
+                $buscarCuenta->save();            
+                
+            }else{
+                $msjeror="El usuario no existe, se solicita una cuenta";
+            }
+        }
+        return $msjeror;
+    }
+    
+//generar un hash a partir del nuevo documento ingresado
+    public function actionValidarHash(){
+        $documento=new Documento();
+        $documento->id_documento=$_POST['id_documento'];
+        $baseFront=$_POST['certificado'];
+        $basePhp = explode(',', $baseFront);
+        $file = base64_decode($basePhp[1]);
+        $path = "documentos/certificados/".time();
+        file_put_contents($path, $file);
+        
+        $documento->url = 'http://'.$_SERVER['HTTP_HOST'].'/'.$path;
+        
+        if(!$documento->save()){
+            $response = [
+                "isOk"=>false,
+                "documento"=>$documento->getErrors()            
+            ];
+        } else {
+            $response = [
+                "isOk"=>true,
+                "documento"=>$documento,
+            ];
+
+        }
+
+    }
+    public function actionListarParticipante(){
+        $participante=Usuario::find()
+        ->select(["id","nombres","apellido_paterno","apellido_materno"])
+        ->where(["id_rol"=>2])
+        ->all();
+        return $participante;
+    }
+    public function actionListarEvento(){
+        $eventos=Evento::find()
+        ->select(["id_evento","nombre"])
+        ->all();
+        return $eventos;
+    }
+    public function actionSubirArchivo(){
+        //metodo subir archivo
+        return $msj="Subir Archivo";
+    }  
 }

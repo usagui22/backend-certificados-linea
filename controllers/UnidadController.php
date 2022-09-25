@@ -141,5 +141,26 @@ class UnidadController extends Controller{
         }
         return $msj;
     }
+    public function actionGetUnidad($id_editar){             
+        $error=null;           
+        if(Unidad::find()->where('=','id_unidad',$id_editar)){
+            if(Unidad::findOne($id_editar)){
+                $unidadSeleccionada=Unidad::findOne($id_editar);
+                $error=['msj'=>'ok','unidad'=>$unidadSeleccionada];
+            }else{
+                $error=['msj'=>'La unidad seleccionada no tiene informacion','unidad'=>null];
+            }            
+        }else{
+            $error=['msj'=>'La unidad seleccionada no existe','unidad'=>null];
+        }
+        return $error;     
+    }
+    public function actionListarUsuario(){
+        $lista=Usuario::find()
+        ->select(['id', 'nombres', 'apellido_paterno','apellido_materno','ci','id_rol'])
+        ->all();        
+        return $lista;
+    }
 }
+
 

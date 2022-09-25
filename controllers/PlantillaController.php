@@ -2,6 +2,7 @@
 namespace app\controllers;
 
 use app\models\Plantilla;
+use Codeception\Template\Upgrade4;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -26,52 +27,133 @@ class PlantillaController extends Controller{
             ]
         );
     }
+    public function beforeAction($action)
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        if (Yii::$app->getRequest()->getMethod() === 'OPTIONS') {
+            Yii::$app->getResponse()->getHeaders()->set('Allow', 'POST GET PUT');
+            Yii::$app->end();
+        }
+        $this->enableCsrfValidation = false;
+        return parent::beforeAction($action);
+    }
+    
+    //crear plantilla
     public function actionCrearPlantilla(){
         $plantilla=new Plantilla();
-        $msg=null;
-        $datos=Yii::$app->request->getBodyParams();
-        //$file = base64_decode($basePhp[1]);
-        //$img=UploadedFile::getInstance($plantilla,'plantilla');
-        $img_plan=$_POST['plantilla'];
-        $c_img=explode(',',$img_plan);
-        $img=base64_decode($c_img[1]);
-        if(isset($datos)){
-            
-            $plantilla->nombre=$datos['nombre'];
-            $plantilla->descripcion=$datos['descripcion'];
-            $plantilla->plantilla='http://'.$_SERVER['HTTP_HOST'].'/'.$this->guardarImagen($img, $datos['nombre']);
-            if($plantilla->validate()&& $plantilla->save()){
-                $msg=["guardado"=>true,"plantilla"=>$plantilla];
-            }else{
-                $msg=["guardado"=>false,"plantilla"=>$plantilla->getErrors()];
-            }
-        }
-        return $msg;
-    }
+        $msjCliente=null;
+        $datosRecibidos=Yii::$app->request->getBodyParams();
+        if(isset($datosRecibidos)){
+            $plantilla->nombre=$datosRecibidos['nombre'];
+            $plantilla->descripcion=$datosRecibidos['descripcion'];
+            $r=\Yii::$app->basePath;
+            $filename=$plantilla->nombre;
+            $plantilla->file=UploadedFile::getInstanceByName('plantilla');
 
-    public function actionEditarPlantilla($id_plantilla){
-        $plantilla=Plantilla::findOne($id_plantilla);
-        $nuevosDatos=Yii::$app->request->getBodyParams();
-        if($plantilla->validate()){
-            $plantilla->attributes=$nuevosDatos;
-            if($plantilla->validate()&&$plantilla->save()){
-                return $plantilla;
+            $plantilla->plantilla="templates/".$filename.time().'.'.$plantilla->file->extension;
+            if($plantilla->validate() && $plantilla->save()){                
+                if(!is_null($r."/templates/".$filename))
+                    $plantilla->file->saveAs($r."/templates/".$filename.time().'.'.$plantilla->file->extension);
+                $msjCliente=['estado'=>'ok','plantilla'=>$plantilla->id_plantilla];
+                                
             }else{
-                return $plantilla->getErrors();
+                $msjCliente=['estado'=>'Error','plantilla'=>$plantilla->getErrors()];
             }
         }
+        return $msjCliente;
+    }
+    
+    //editar plantilla
+    public function actionEditarPlantilla($id_editar){
+        $plantilla =Plantilla::findOne($id_editar);
+        $atributosCambiar=Yii::$app->request->getBodyParams();
+        $msj=null;
+        
+        if(isset($atributosCambiar)){
+            
+            if($plantilla->attributes!=$atributosCambiar){
+                $plantilla->nombre=$atributosCambiar['nombre'];
+                $plantilla->descripcion=$atributosCambiar['descripcion'];                
+                $plantilla->file=UploadedFile::getInstanceByName('plantilla');
+                $rutaFile=\Yii::$app->basePath."/templates/".$plantilla->nombre.time().'.'.$plantilla->file->extension;
+                $rutaPlan="templates/".$plantilla->nombre.time().'.'.$plantilla->file->extension;
+                $rutaExist=\Yii::$app->basePath."/templates/".$plantilla->nombre;
+                $plantilla->plantilla=$rutaPlan;
+                    if($plantilla->validate() && $plantilla->save()){
+                        if(!is_null($rutaExist))
+                        $plantilla->file->saveAs($rutaFile);
+                        $msj=['estado'=>'ok','plantilla'=>$plantilla];
+                    }else{
+                        $msj=['estado'=>'Bad Atributes','plantilla'=>$plantilla->getErrors()];
+                    }
+            }else{
+                if($plantilla->nombre==$atributosCambiar['nombre'] && $plantilla->descripcion==$atributosCambiar['descripcion']){
+                    $plantilla->file=UploadedFile::getInstanceByName('plantilla');
+                    $rutaFile=\Yii::$app->basePath."/templates/".$plantilla->nombre.time().'.'.$plantilla->file->extension;
+                    $rutaPlan="templates/".$plantilla->nombre.time().'.'.$plantilla->file->extension;
+                    $rutaExist=\Yii::$app->basePath."/templates/".$plantilla->nombre;
+                    $plantilla->plantilla=$rutaPlan;
+                    if($plantilla->validate() && $plantilla->save()){
+                        if(!is_null($rutaExist))
+                        $plantilla->file->saveAs($rutaFile);
+                        $msj=['estado'=>'ok','plantilla'=>$plantilla];
+                    }else{
+                        $msj=['estado'=>'bad File','plantilla'=>$plantilla->getErrors()];
+                    }
+                }else{
+                    if($plantilla->nombre!=$atributosCambiar['nombre'] && $plantilla->descripcion!=$atributosCambiar['descripcion']){
+                        $plantilla->nombre=$atributosCambiar['nombre'];
+                        $plantilla->descripcion=$atributosCambiar['descripcion'];
+                        if($plantilla->validate() && $plantilla->save()){                     
+                            $msj=['estado'=>'ok','plantilla'=>$plantilla];
+                        }else{
+                            $msj=['estado'=>'bad Name and bad Description','plantilla'=>$plantilla->getErrors()];
+                        }
+                    }else{
+
+                        if($plantilla->descripcion==$atributosCambiar['descripcion']){
+                            $plantilla->nombre=$atributosCambiar['nombre'];
+                            if($plantilla->validate() && $plantilla->save()){                     
+                                $msj=['estado'=>'ok','plantilla'=>$plantilla];
+                            }else{
+                                $msj=['estado'=>'bad Name','plantilla'=>$plantilla->getErrors()];
+                            }
+                        }else{
+                            $plantilla->descripcion=$atributosCambiar['descripcion'];
+                            if($plantilla->validate() && $plantilla->save()){                        
+                                $msj=['estado'=>'ok','plantilla'=>$plantilla];
+                            }else{
+                                $msj=['estado'=>'bad Description','plantilla'=>$plantilla->getErrors()];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $msj;
     }
 
     public function actionEliminarPlantilla($id_plan){
         return Plantilla::findOne($id_plan)->delete()?print_r("eliminado"):print_r("Error id incorrecto");
-    }
+    }    
 
-    public function guardarImagen($img,$nombre){
-        $ruta=null;
-        if(isset($img)){           
-            $ruta="/documents/plantillas/".$nombre.$img;   
-            file_put_contents($ruta,$img);
-        }
-        return $ruta;
+    public function actionListarPlantillas(){
+        return Plantilla::find()->all();
+    }
+    public function actionGetPlantilla($id_get){
+                 
+            $error=null;           
+            if(Plantilla::find()->where('=','id_plantilla',$id_get)){
+                if(Plantilla::findOne($id_get)){
+                    $plantillaSeleccionada=Plantilla::findOne($id_get);
+                    $error=['msj'=>'ok','plantilla'=>$plantillaSeleccionada];
+                }else{
+                    $error=['msj'=>'La plantilla seleccionada no tiene informacion','plantilla'=>null];
+                }            
+            }else{
+                $error=['msj'=>'La plantilla seleccionada no existe','plantilla'=>null];
+            }
+            return $error;     
+        
     }
 }

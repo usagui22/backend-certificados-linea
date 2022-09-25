@@ -18,7 +18,7 @@ class AuthController extends Controller{
         Yii::warning(getallheaders());
         parent::init();
     }
-
+ 
     public function beforeAction($action)
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
