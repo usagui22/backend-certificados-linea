@@ -46,11 +46,10 @@ class UnidadController extends Controller{
     }
 
     public function actionCrearUnidad(){
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $unidad =new Unidad();
         $msj=null;
         $datos=Yii::$app->request->getBodyParams();
-
         if(isset($unidad)){
             
             $unidad->attributes=$datos;
@@ -80,12 +79,12 @@ class UnidadController extends Controller{
             }else{
                 return $unidad->getErrors();
             }
-        }    
-        
+        }            
     }
 
-    public function actionEliminarUnidad($id_eli){
-        return Unidad::findOne($id_eli)?"eliminado":"error unidad no existe";
+    public function actionEliminarUnidad(){
+        $unidadELiminar=Yii::$app->request->getBodyParam('id_eli');
+        return Unidad::findOne($unidadELiminar)->delete()?"eliminado":"error unidad no existe";
     }
 
     public function actionListarResponsables(){
@@ -160,6 +159,11 @@ class UnidadController extends Controller{
         ->select(['id', 'nombres', 'apellido_paterno','apellido_materno','ci','id_rol'])
         ->all();        
         return $lista;
+    }
+
+    public function actionUnidadesRegistradas(){
+        $unidadesRegistradas=Unidad::find()->count();
+        return $unidadesRegistradas;
     }
 }
 

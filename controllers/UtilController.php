@@ -2,6 +2,7 @@
 namespace app\controllers;
 
 use app\models\RolUsuario;
+use app\models\Usuario;
 use phpDocumentor\Reflection\File;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use yii\web\Controller;
@@ -84,11 +85,13 @@ class UtilController extends Controller{
 
     public static function asignarRol($id_usuario)
     {
-        $data = [
-            "id_usuario"=>$id_usuario,
-            "id_rol"=>2
-        ];
-        $model = new RolUsuario($data);
+        // $data = [
+        //     "id_usuario"=>$id_usuario,
+        //     "id_rol"=>2
+        // ];
+        //$model = new RolUsuario($data);
+        $model=Usuario::findOne($id_usuario);
+        $model->id_rol=2;
         if($model->save()){
             return true;
         }else{
@@ -96,4 +99,5 @@ class UtilController extends Controller{
         }
     }
 
+    
 }

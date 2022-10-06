@@ -5,6 +5,7 @@ use app\models\Documento;
 use app\models\Evento;
 use app\models\Plantilla;
 use app\models\Usuario;
+use Exception;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -23,7 +24,7 @@ class DocumentoController extends Controller{
                     'actions' => [
                         'crear-documento' => ['POST'],
                         'actualizar-documento'=>['POST'],
-                        'eliminar-documento'=>['POST','GET']
+                        'eliminar-documento'=>['POST']
                     ],
                 ],
             ]
@@ -39,34 +40,49 @@ class DocumentoController extends Controller{
         $this->enableCsrfValidation = false;
         return parent::beforeAction($action);
     }
-    public function actionCrearDocumento()
-    {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+    public function actionCrearDocumentoAdmin(){
         $documento = new Documento();
-        $params=Yii::$app->request->getBodyParams();        
-        $clave="crypt";
-        //$this->ruleta(5);
+        $nuevoDatos=Yii::$app->request->getBodyParams();
         
-        //$clave=crypt();
-        if (isset($params)) {
-            $documento['nombre']=$params['nombre'];
-            $documento['hash']=Yii::$app->getSecurity()->generatePasswordHash($clave);
-            //$documento['hash']=sha1($clave);
-            //$documento['fecha_confirmacion']=preguntarEstado();
-            // $documento['id_tipo_documento']=$this->selectTipo($params['nombre_documento']);
-            $documento['nota_valoracion']=$params['nota_valoracion'];            
-            $documento['id_evento']=$this->selectEvento($params['nombre']);
-            $documento['id_plantilla']=$this->selectPlantilla($params['nombre']);
-            $documento['path']='http://'.$_SERVER['HTTP_HOST'].'/'.$this->generarPath($params['file']);
-
-            if ($documento->validate()&&$documento->save()) {
+        if(isset($nuevoDatos)){
+            $documento->attributes=$nuevoDatos;
+            $documento->nombre_integrante=$nuevoDatos['nombre_integrante'];
+            $documento->id_evento=$this->selectEvento($nuevoDatos['evento']);
+            $documento->id_plantilla=$this->selectPlantilla($nuevoDatos['plantilla']);
+            if($documento->validate() && $documento->save()){
                 return $documento;
-              
-            }else {
+            }else{
                 return $documento->getErrors();
-                }
-        }          
+            }
+        }
     }
+    // public function actionCrearDocumento()
+    // {
+    //     Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+    //     $documento = new Documento();
+    //     $params=Yii::$app->request->getBodyParams();        
+    //     $clave="crypt";
+    //     //$this->ruleta(5);        
+    //     //$clave=crypt();
+    //     if (isset($params)) {
+    //         $documento['nombre_integrante']=$params['nombre_integrante'];
+    //         $documento['hash']=Yii::$app->getSecurity()->generatePasswordHash($clave);
+    //         //$documento['hash']=sha1($clave);
+    //         //$documento['fecha_confirmacion']=preguntarEstado();
+    //         // $documento['id_tipo_documento']=$this->selectTipo($params['nombre_documento']);
+    //         $documento['nota_valoracion']=$params['nota_valoracion'];            
+    //         $documento['id_evento']=$this->selectEvento($params['nombre']);
+    //         $documento['id_plantilla']=$this->selectPlantilla($params['nombre']);
+    //         $documento['path']='http://'.$_SERVER['HTTP_HOST'].'/'.$this->generarPath($params['file']);
+
+    //         if ($documento->validate()&&$documento->save()) {
+    //             return $documento;
+              
+    //         }else {
+    //             return $documento->getErrors();
+    //             }
+    //     }          
+    // }
 
     public function actionActualizarDocumento($id_ac)
     {
@@ -84,9 +100,10 @@ class DocumentoController extends Controller{
         
     }
 
-    public function actionEliminarDocumento($id_doc_eli)
+    public function actionEliminarDocumento()
     {        
-        return Documento::findOne($id_doc_eli)->delete()?print_r("eliminado exitosamente"):print_r("id no encontrado");
+        $id_doc_eli=Yii::$app->request->getBodyParam('id');
+        return Documento::findOne($id_doc_eli)->delete()?"eliminado exitosamente":"id no encontrado";
     }
 
     private function selectEvento($nameEvento){
@@ -98,6 +115,7 @@ class DocumentoController extends Controller{
         $id_res=$evento['id_evento'];
         return $id_res;
     }
+
     private function selectPlantilla($namePlantilla)
     {   
         $id_encontrado=null;
@@ -154,14 +172,6 @@ class DocumentoController extends Controller{
 
     public function actionListarDocumento(){
         $documentos=Documento::find()->all();
-        // $msaje="";
-        // if(empty($documentos)){
-        //     $msaje="La tabla no contiene datos ";
-        //     return $msaje;
-        // }else{
-        //     $msaje="La tabla esta cargando su contenido";
-        //     return $documentos;
-        // } 
         return $documentos;               
     }
     public function actionSincronizar($ci_usuario,$notaEvento,$codSis){
@@ -226,8 +236,41 @@ class DocumentoController extends Controller{
         ->all();
         return $eventos;
     }
-    public function actionSubirArchivo(){
-        //metodo subir archivo
-        return $msj="Subir Archivo";
+    public function actionSubirNotas(){
+        $inputFile='uploads/documents_file.xlsx';
+        try {
+            $inputFileType=\PHPExcel_IOFactory::identify($inputFile);
+            $objReader = \PHPExcel_IOFactory::createReader($inputFileType);
+            $objPHPExcel=$objReader->load($inputFile);
+        } catch (Exception $e) {
+            die('Error');
+        }
+        $sheet = $objPHPExcel->getSheet(0);
+        //$highestRow =$sheet->getSheetRow();
+        //$highestColumn=$sheet->getSheetColumn();
+
+        // for($row=1;$row<=$highestRow;$row++){
+        //     $rowData=$sheet->rangeToArray('A'.$row.':'.$highestColumn.$row,NULL,TRUE,FALSE);
+        //     if($row ==1){
+        //         continue;
+        //     }            
+        // }
+
     }  
+    public function actionGetDocumento(){
+        $valorDoc=Documento::find()
+        ->count();
+        return $valorDoc;
+    }
+    public function actionGetPlantilla(){
+        $id_p=Yii::$app->request->getBodyParam('id_plantilla');
+        $plantilla=Plantilla::find($id_p)->one();
+        if(isset($plantilla)){
+            return $plantilla;
+        }else{
+            return null;
+        }    
+    }
+    
+    
 }

@@ -109,8 +109,8 @@ class UsuarioController extends Controller{
         $model->nombres = $p['nombres'];
         $model->apellido_materno = $p['apellido_materno'];
         $model->apellido_paterno = $p['apellido_paterno'];
-        $model->correo = $p['correo'];
-        $pwd = UtilController::generatePassword();
+        $model->correo = $p['correo'];        
+        $pwd = UtilController::generatePassword();        
         $model->password_hash = $pwd;
         if($model->save()){
             if(UtilController::asignarRol($model->id)){
@@ -170,30 +170,37 @@ class UsuarioController extends Controller{
     public function actionRegistrarUsuario(){
         $usuario=new Usuario();
         $params = Yii::$app->request->getBodyParams();
-        $me="";
+        $me=null;
         if(isset($usuario)){
             $usuario->attributes=$params;                        
             $pass = UtilController::generatePassword();
-            $usuario->password_hash = $pass;
-
-            if($usuario->validate()){
-                $usuario->save();
-                $me=["ok"=>true,"usuario"=>$usuario];
-                if(UtilController::asignarRol($usuario->id)){
-                    $email = new AccountDataEmail();
-                    if($email->Account($usuario)){
-                    return $usuario;
+            $usuario->password_hash = $pass;        
+            if($usuario->validate() && $usuario->save()){                                                
+                if($this->comprobarCi($usuario->ci)){
+                    if(UtilController::asignarRol($usuario->id)){
+                        $email = new AccountDataEmail();
+                        if($email->Account($usuario)){
+                        return $usuario;
+                        }else{
+                            return null;
+                        }
                     }else{
                         return null;
-                    }
-                }else{
-                    return null;
+                    }                
                 }
             }else{
                 $me=["ok"=>false,"usuario"=>$usuario->getErrors()];
             }
         }
         return $me;
+    }    
+    public function comprobarCi($valorCi){
+        $usuario=Usuario::find()
+        ->where(['ci'=>$valorCi]);
+        if(isset($usuario)) {
+            return true;
+        }
+        return false;
     }
 
     public function actionListarParticipantes(){
@@ -202,5 +209,27 @@ class UsuarioController extends Controller{
         ->where(["id_rol"=>2])
         ->all();
         return $participantes;
+    }
+    public function actionEliminarUsuario(){
+        $id_usu=Yii::$app->request->getBodyParam('id');
+        $usuario=Usuario::findOne($id_usu);
+        return $usuario->deleteAll()?"Usuario Eliminado":"Id no encontrado";
+    }
+    
+    public function actionGetUsuarioParticipante(){
+        $usuario = Usuario::find()->where(['id_rol'=>2])->count();
+        return $usuario;
+    }
+    public function actionGetUsuarioResponsable(){
+        $valorResp= Usuario::find()->where(['id_rol'=>1])->count();
+        return $valorResp;
+    }
+    public function actionGetUsuarioExpositor(){
+        $valorExpositor= Usuario::find()->where(['id_rol'=>3])->count();
+        return $valorExpositor;
+    }
+    public function actionGetUsuarioCoordinador(){
+        $valorCoordinador= Usuario::find()->where(['id_rol'=>5])->count();
+        return $valorCoordinador;
     }
 }

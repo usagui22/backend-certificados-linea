@@ -3,6 +3,7 @@ namespace app\controllers;
 
 use app\models\Evento;
 use app\models\Unidad;
+use PhpOffice\PhpSpreadsheet\Calculation\DateTimeExcel\Week;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -73,7 +74,8 @@ class EventoController extends Controller{
             }            
         }
     }
-    public function actionEliminarEvento($id_bor){
+    public function actionEliminarEvento(){
+        $id_bor=Yii::$app->request->getBodyParam('id');
         return Evento::findOne($id_bor)->delete()?"eliminado":"Error al eliminar";
     }
 
@@ -102,5 +104,36 @@ class EventoController extends Controller{
     }
     public function actionGetEvento($id_editar){
         return Evento::findOne($id_editar);
+    }
+    public function actionEventosFinalizados(){        
+        $contEveFin=0;
+        $tam=Evento::find()->count();
+        for ($i=0; $i >=$tam; $i++) { 
+            $evento=Evento::find($i);     
+            print_r($evento);
+
+            if($this->verificarFecha($evento->fecha_fin)){                
+                $contEveFin=+1;
+                print_r($contEveFin);
+                exit();
+            }else{
+                $i++;
+            }
+        }
+        return $contEveFin;        
+    }
+    private function verificarFecha($fecha){
+        $fechaActual=
+        time();
+        //strtotime(date("d-m-Y"));
+        $siEs=false;
+        while($fecha<=$fechaActual){
+            $siEs=true;
+        }        
+        return $siEs;
+    }
+    public function actionEventosEnCurso(){
+
+        return Evento::find()->count();
     }
 }

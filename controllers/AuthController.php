@@ -1,6 +1,7 @@
 <?php
 namespace app\controllers;
 
+use app\models\Rol;
 use app\models\RolUsuario;
 use app\models\Usuario;
 use Yii;
@@ -176,11 +177,14 @@ class AuthController extends Controller{
     }
     protected function asignarRol($id_usuario, $rol)
     {
-        $data = [
-            "id_usuario"=>$id_usuario,
-            "id_rol"=>2
-        ];
-        $model = new RolUsuario($data);
+        // $data = [
+        //     "id_usuario"=>$id_usuario,
+        //     "id_rol"=>2
+        // ];
+        // $model = new RolUsuario($data);
+        $otherRol=Rol::findOne($rol);
+        $model=Usuario::findOne($id_usuario);
+        $model->id_rol=$otherRol->id;
         if($model->save()){
             return true;
         }else{

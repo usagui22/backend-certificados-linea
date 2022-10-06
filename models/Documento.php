@@ -8,8 +8,8 @@ use Yii;
  * This is the model class for table "documento".
  *
  * @property int $id_documento
- * @property string $nombre
- * @property string $hash
+ * @property string $nombre_integrante
+ * @property string|null $hash
  * @property string|null $fecha_confirmacion
  * @property int $id_evento
  * @property int $id_plantilla
@@ -35,13 +35,13 @@ class Documento extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nombre', 'hash', 'id_evento', 'id_plantilla'], 'required'],
-            [['nombre', 'hash', 'path'], 'string'],
+            [['nombre_integrante', 'id_evento', 'id_plantilla'], 'required'],
+            [['nombre_integrante', 'hash', 'path'], 'string'],
             [['fecha_confirmacion'], 'safe'],
             [['id_evento', 'id_plantilla', 'nota_valoracion'], 'default', 'value' => null],
             [['id_evento', 'id_plantilla', 'nota_valoracion'], 'integer'],
-            [['id_evento'], 'exist', 'skipOnError' => true, 'targetClass' => Evento::className(), 'targetAttribute' => ['id_evento' => 'id_evento']],
-            [['id_plantilla'], 'exist', 'skipOnError' => true, 'targetClass' => Plantilla::className(), 'targetAttribute' => ['id_plantilla' => 'id_plantilla']],
+            [['id_evento'], 'exist', 'skipOnError' => true, 'targetClass' => Evento::class, 'targetAttribute' => ['id_evento' => 'id_evento']],
+            [['id_plantilla'], 'exist', 'skipOnError' => true, 'targetClass' => Plantilla::class, 'targetAttribute' => ['id_plantilla' => 'id_plantilla']],
         ];
     }
 
@@ -52,7 +52,7 @@ class Documento extends \yii\db\ActiveRecord
     {
         return [
             'id_documento' => 'Id Documento',
-            'nombre' => 'Nombre',
+            'nombre_integrante' => 'Nombre Integrante',
             'hash' => 'Hash',
             'fecha_confirmacion' => 'Fecha Confirmacion',
             'id_evento' => 'Id Evento',
@@ -69,7 +69,7 @@ class Documento extends \yii\db\ActiveRecord
      */
     public function getEvento()
     {
-        return $this->hasOne(Evento::className(), ['id_evento' => 'id_evento']);
+        return $this->hasOne(Evento::class, ['id_evento' => 'id_evento']);
     }
 
     /**
@@ -79,6 +79,6 @@ class Documento extends \yii\db\ActiveRecord
      */
     public function getPlantilla()
     {
-        return $this->hasOne(Plantilla::className(), ['id_plantilla' => 'id_plantilla']);
+        return $this->hasOne(Plantilla::class, ['id_plantilla' => 'id_plantilla']);
     }
 }

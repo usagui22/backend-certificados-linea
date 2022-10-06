@@ -21,7 +21,7 @@ class PlantillaController extends Controller{
                     'actions' => [
                         'crear-plantilla' => ['POST','GET'],
                         'actualizar-plantilla'=>['POST'],
-                        'borrar-plantilla'=>['POST','GET']
+                        'eliminar-plantilla'=>['POST']
                     ],
                 ],
             ]
@@ -133,9 +133,14 @@ class PlantillaController extends Controller{
         return $msj;
     }
 
-    public function actionEliminarPlantilla($id_plan){
-        return Plantilla::findOne($id_plan)->delete()?print_r("eliminado"):print_r("Error id incorrecto");
-    }    
+    // public function actionEliminarPlantilla($id_eli){
+    //     return Plantilla::findOne($id_eli)->deleteAll()?print_r("eliminado"):print_r("Error id incorrecto");
+    // }  
+    public function actionEliminarPlantilla(){
+        $id_plE=Yii::$app->request->getBodyParam('id');
+        $plantillaEliminar=Plantilla::findOne($id_plE);
+        return $plantillaEliminar->delete()?"eliminado":"no existe plantilla";
+    }  
 
     public function actionListarPlantillas(){
         return Plantilla::find()->all();
@@ -155,5 +160,24 @@ class PlantillaController extends Controller{
             }
             return $error;     
         
+    }
+    public function actionPlantillasExpositor(){
+        $valorExpositor=
+        Plantilla::find()        
+        ->where(["nombre"=>"expositor"])
+        ->count();
+        return $valorExpositor;
+    }
+    public function actionPlantillasParticipacion(){
+        $valorParticipacion= Plantilla::find()
+        ->where(["nombre"=>"participacion"])
+        ->count();
+        return $valorParticipacion;
+    }
+    public function actionPlantillasAprobacion(){
+        $valorAprobacion= Plantilla::find()
+        ->where(["nombre"=>"aprobacion"])
+        ->count();
+        return $valorAprobacion;
     }
 }
