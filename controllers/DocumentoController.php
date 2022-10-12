@@ -46,7 +46,7 @@ class DocumentoController extends Controller{
         
         if(isset($nuevoDatos)){
             $documento->attributes=$nuevoDatos;
-            $documento->nombre_integrante=$nuevoDatos['nombre_integrante'];
+            $documento->nombre_integrante=$this->selectIntegrante($nuevoDatos['nombre_integrante']);
             $documento->id_evento=$this->selectEvento($nuevoDatos['evento']);
             $documento->id_plantilla=$this->selectPlantilla($nuevoDatos['plantilla']);
             if($documento->validate() && $documento->save()){
@@ -115,6 +115,15 @@ class DocumentoController extends Controller{
         $id_res=$evento['id_evento'];
         return $id_res;
     }
+    private function selectIntegrante($nameIntegrante){
+        $id=null;
+        $integrante=Usuario::find()
+        ->select('id_usuario')
+        ->where(['nombres'+'apellido paterno'+'apellido_materno'=>$nameIntegrante])
+        ->one();
+        $id=$integrante['id'];
+        return $id;
+    }
 
     private function selectPlantilla($namePlantilla)
     {   
@@ -174,6 +183,7 @@ class DocumentoController extends Controller{
         $documentos=Documento::find()->all();
         return $documentos;               
     }
+
     public function actionSincronizar($ci_usuario,$notaEvento,$codSis){
         $buscarCuenta=Usuario::findOne($ci_usuario);
         $msjeror="";
@@ -236,27 +246,27 @@ class DocumentoController extends Controller{
         ->all();
         return $eventos;
     }
-    public function actionSubirNotas(){
-        $inputFile='uploads/documents_file.xlsx';
-        try {
-            $inputFileType=\PHPExcel_IOFactory::identify($inputFile);
-            $objReader = \PHPExcel_IOFactory::createReader($inputFileType);
-            $objPHPExcel=$objReader->load($inputFile);
-        } catch (Exception $e) {
-            die('Error');
-        }
-        $sheet = $objPHPExcel->getSheet(0);
-        //$highestRow =$sheet->getSheetRow();
-        //$highestColumn=$sheet->getSheetColumn();
+    // public function actionSubirNotas(){
+    //     $inputFile='uploads/documents_file.xlsx';
+    //     try {
+    //         $inputFileType=\PHPExcel_IOFactory::identify($inputFile);
+    //         $objReader = \PHPExcel_IOFactory::createReader($inputFileType);
+    //         $objPHPExcel=$objReader->load($inputFile);
+    //     } catch (Exception $e) {
+    //         die('Error');
+    //     }
+    //     $sheet = $objPHPExcel->getSheet(0);
+    //     //$highestRow =$sheet->getSheetRow();
+    //     //$highestColumn=$sheet->getSheetColumn();
 
-        // for($row=1;$row<=$highestRow;$row++){
-        //     $rowData=$sheet->rangeToArray('A'.$row.':'.$highestColumn.$row,NULL,TRUE,FALSE);
-        //     if($row ==1){
-        //         continue;
-        //     }            
-        // }
+    //     // for($row=1;$row<=$highestRow;$row++){
+    //     //     $rowData=$sheet->rangeToArray('A'.$row.':'.$highestColumn.$row,NULL,TRUE,FALSE);
+    //     //     if($row ==1){
+    //     //         continue;
+    //     //     }            
+    //     // }
 
-    }  
+    // }  
     public function actionGetDocumento(){
         $valorDoc=Documento::find()
         ->count();
@@ -271,6 +281,20 @@ class DocumentoController extends Controller{
             return null;
         }    
     }
-    
+
+    public function actionValidarQr(){
+        $datos_Integrante=Yii::$app->request->getBodyParams();        
+        $documento=Documento::findOne($datos_Integrante['id']);
+        $fechaValida=$datos_Integrante['fecha_confirmacion'];
+        if(!is_null($fechaValida)){            
+            $documento->hash=$this->generateHashDoc();
+            if($documento->save()){
+                return $documento;
+            }else{
+                return $documento->getErrors();
+            }
+        }
+        return "Error la fecha esta vacia";
+    }
     
 }

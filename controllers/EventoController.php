@@ -108,32 +108,38 @@ class EventoController extends Controller{
     public function actionEventosFinalizados(){        
         $contEveFin=0;
         $tam=Evento::find()->count();
-        for ($i=0; $i >=$tam; $i++) { 
-            $evento=Evento::find($i);     
-            print_r($evento);
-
-            if($this->verificarFecha($evento->fecha_fin)){                
-                $contEveFin=+1;
-                print_r($contEveFin);
-                exit();
+        $eventosFinalizados=null;
+        for ($i=1; $i <=$tam; $i++) { 
+            $evento=Evento::findOne($i);                 
+            if($this->verificarFecha($evento->fecha_fin)==true){                
+                $contEveFin++;                
             }else{
                 $i++;
             }
         }
-        return $contEveFin;        
+        return $eventosFinalizados=['numeroEventos'=>$contEveFin,'evento'=>$evento];        
+    }
+    public function actionEventosEnCurso(){
+        $conEveC=0;
+        $tam=Evento::find()->count();
+        for($j=1;$j<=$tam;$j++){
+            $evento=Evento::findOne($j);                 
+            if($this->verificarFecha($evento->fecha_fin)!=true){                
+                $conEveC++;                
+            }else{
+                $j++;
+            }
+        }
+        return $conEveC;
     }
     private function verificarFecha($fecha){
-        $fechaActual=
-        time();
+        $fechaActual=time();
         //strtotime(date("d-m-Y"));
         $siEs=false;
-        while($fecha<=$fechaActual){
+        if($fecha<=$fechaActual){
             $siEs=true;
         }        
         return $siEs;
     }
-    public function actionEventosEnCurso(){
-
-        return Evento::find()->count();
-    }
+    
 }
