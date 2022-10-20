@@ -117,7 +117,8 @@ class EventoController extends Controller{
                 $i++;
             }
         }
-        return $eventosFinalizados=['numeroEventos'=>$contEveFin,'evento'=>$evento];        
+        //return $eventosFinalizados=['numeroEventos'=>$contEveFin,'evento'=>$evento];        
+        return $contEveFin;
     }
     public function actionEventosEnCurso(){
         $conEveC=0;

@@ -296,5 +296,18 @@ class DocumentoController extends Controller{
         }
         return "Error la fecha esta vacia";
     }
-    
+    // public function actionVerDocumento(){
+    //     $id_fondo=Yii::$app->request->getBodyParam('plantilla');
+    //     $imagen=Plantilla::find($id_fondo)->one()->getAttribute('plantilla');
+    // }
+    public function actionGetPlantillaDecode(){
+        $nom_pla=Yii::$app->request->getBodyParam('plantilla');
+        $img_plantilla=Plantilla::find()->one()->getAttribute($nom_pla);
+        $img_fondo=base64_decode($img_plantilla);
+        if(!isset($img_fondo)){
+            return $img_fondo;
+        }else{
+            return "no se encuentra imagen";
+        }        
+    }
 }

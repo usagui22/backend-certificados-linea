@@ -46,16 +46,18 @@ class PlantillaController extends Controller{
         if(isset($datosRecibidos)){
             $plantilla->nombre=$datosRecibidos['nombre'];
             $plantilla->descripcion=$datosRecibidos['descripcion'];
+
             $r=\Yii::$app->basePath;
             $filename=$plantilla->nombre;
             $plantilla->file=UploadedFile::getInstanceByName('plantilla');
 
-            $plantilla->plantilla="templates/".$filename.time().'.'.$plantilla->file->extension;
+            //$rutaImagen=$r."templates/".$filename.time().'.'.$plantilla->file->extension;
+            //$plantilla->plantilla="templates/".$filename.time().'.'.$plantilla->file->extension;
+            $plantilla->plantilla=base64_encode($plantilla->file);
             if($plantilla->validate() && $plantilla->save()){                
                 if(!is_null($r."/templates/".$filename))
-                    $plantilla->file->saveAs($r."/templates/".$filename.time().'.'.$plantilla->file->extension);
-                $msjCliente=['estado'=>'ok','plantilla'=>$plantilla->id_plantilla];
-                                
+                    //$plantilla->file->saveAs($r."/templates/".$filename.time().'.'.$plantilla->file->extension);
+                $msjCliente=['estado'=>'ok','plantilla'=>$plantilla->id_plantilla];                                
             }else{
                 $msjCliente=['estado'=>'Error','plantilla'=>$plantilla->getErrors()];
             }
